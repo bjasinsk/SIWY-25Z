@@ -6,3 +6,6 @@ Skład zespołu:
 - Kajetan Rożej
 - Bartosz Jasiński
 
+## Design proposal
+
+Design proposal jest umieszczony w pliku [design_proposal.md](design_proposal.md).
