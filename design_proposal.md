@@ -89,18 +89,18 @@
     - DualDA
     
   - Dodatkowo:
-    - Influecne Functions (w ramach możliwośsci sprzętowych)
-    - Wartości Shaepelya (na danych zgrupowanych, w ramach możliwości sprzętowych)
+    - Influence Functions (w ramach możliwości sprzętowych)
+    - Wartości Shapelya (na danych zgrupowanych, w ramach możliwości sprzętowych)
 
 - **Eksperymenty**: 
   
-  1. Wstępem do eksperymentów będzie wytrenowanie modelu **ResNet18** na różnych kombinacjach zbiorów treningowych jak opisano w rozdziale [Zbiór danych](#zakres-eksperymentów)  a następnie wykonanie predykcji na zbiorze testowym dla danego zadania.  Umożliwi to porównanie uzyskanych wyników modelu (accuracy) dla danych spoza dystrybucji z wartościami opublikowanymi w artykule.
+  1. Wstępem do eksperymentów będzie wytrenowanie modelu **ResNet18** na różnych kombinacjach zbiorów treningowych jak opisano w rozdziale [Zbiór danych](#zakres-eksperymentów) a następnie wykonanie predykcji na zbiorze testowym dla danego zadania. Umożliwi to porównanie uzyskanych wyników modelu (accuracy) dla danych spoza dystrybucji z wartościami opublikowanymi w artykule.
 
   2. Kolejnym krokiem będzie wykorzystanie każdej z porównywanych metod w celu sprawdzenia atrybucji poszczególnych przykładów treningowych w końcowej predykcji. Dla każdego zestawu sprawdzone zostaną co najmniej 3 podstawowe metody - daje to 6 eksperymentów na zadanie.
   
   3. Uzyskane wyniki zostaną następnie zwizualizowane i zweryfikowane (zapewnie ręcznie, być może z wykorzystaniem LDS - do weryfikacji) i porównane.
 
-  4. Ciekawym rozszerzeniem eksperymentów może być porówywanie atrybucji nie poszczególnych danych, a kontekstów (np. pies w salonie, pies przy kanapie) użytych w treningu w predykcji w nowym kontekście testowym. W szczególności ciekawe może być sprawdzenie korelacji między odległościami kontekstów wyliczonymi metodą autorów artykułu a wartościami uzyskanymi z metod atrybucji. W tym celu poza przytoczonymi wcześniej małymi przykładami z  maksymalnie 4 konteksami przydatne mogą okazać się opisane wcześniej *general context* dostepne w zbiorze danych.
+  4. Ciekawym rozszerzeniem eksperymentów może być porówywanie atrybucji nie poszczególnych danych, a kontekstów (np. pies w salonie, pies przy kanapie) użytych w treningu w predykcji w nowym kontekście testowym. W szczególności ciekawe może być sprawdzenie korelacji między odległościami kontekstów wyliczonymi metodą autorów artykułu a wartościami uzyskanymi z metod atrybucji. W tym celu poza przytoczonymi wcześniej małymi przykładami z maksymalnie 4 konteksami przydatne mogą okazać się opisane wcześniej *general context* dostepne w zbiorze danych.
 
 - **Proponowane modele**: ResNet18, Transformer wizyjny (opcjonalnie, jeżeli zostanie czas)
 
@@ -109,7 +109,7 @@
 - sprawdzenie, czy są obserwowalne różnice w działaniu metod atrybucji w zależności od wielkości różnic pomiędzy zbiorem treningowym i testowym (intuicja - w przypadku zbiorów zbliżonych model może koncentrować się na kilku podobnych przykładach, podczas gdy w zbiorach mocno różnych atrybucja rozłoży się bardziej równomiernie) 
 - odpowiedź na pytanie czy metody atrybucji danych mogą stanowić wskazówkę umożliwiającą udoskonalenie procesu uczenia przy wykorzystaniu danych spoza dystrybucji sklasyfikowanych błędnie
 - sprawdzenie, czy wyniki metod atrybucji danych korespondują z "odległością" pomiędzy danymi spoza dytsrybucji i danymi z dystrybucji wyliczoną innym metodami
-- przygotowanie potoku przetwarzania danych/treningu i środowiska umożliwiającego powtórzenie i ewentaulne rozwinięcie eksperymentów w przyszłości
+- przygotowanie potoku przetwarzania danych/treningu i środowiska umożliwiającego powtórzenie i ewentualne rozwinięcie eksperymentów w przyszłości
 - zaliczenie drugiego kolokwium :)
 
 ## Stos technologiczny
@@ -121,16 +121,16 @@
 
 ## Bibliografia
 
-| Artykuł       | Autorski komentarz                   | Kod                                                     | Metryki | Modele |
-|---------------|--------------------------------------|---------------------------------------------------------|---------|--------|
-| Metashift | zawarty w ramach opisu zbioru danych | https://github.com/Weixin-Liang/MetaShift/              | M       | X      |
-| Influence Functions |  paper zasugerowany na wykładzie, szczegółowy opis metody IF, kod do replikacji eksperymentów                | https://arxiv.org/abs/1703.04730                                    |Replikacja eksperymentów w artykule: http://bit.ly/gt-influence oraz  http://bit.ly/cl-influence       |        |
-| TracIn        |  paper zasugerowany na wykładzie, szczegółowy opis metody TracIn, kod do replikacji eksperymentów                                    | https://arxiv.org/abs/2002.08484                        | https://github.com/frederick0329/TracIn         |        |
-| TRAK          |  paper zasugerowany na wykładzie, szczegółowy opis metody TRAK, kod do replikacji eksperymentów                                     | https://arxiv.org/abs/2303.14186                        | https://github.com/MadryLab/trak        |        |
-| DualDA        |  paper zasugerowany na wykładzie, szczegółowy opis metody DualDA, kod do replikacji eksperymentów                                  | https://arxiv.org/abs/2402.12118v2                      | https://github.com/gumityolcu/DualXDA        |        |
-| Out-of-Distribution Generalization Analysis via Influence Function       | Analiza wykorzystania IF do wykrywania danych spoza dystrybucji - do doczytania                              | https://arxiv.org/abs/2101.08521                |       |        |
-| "Why did the Model Fail?": Attributing Model Performance Changes to Distribution Shifts      | Wykorzystanie metod Shapelya do wyjaśnienia spadku performancu modelu na danych spoza dystrybucji - do doczytania, ścisle związane z tematem                                 | https://arxiv.org/abs/2210.10769                      |    |        |
-| LossVal |                                     | https://arxiv.org/pdf/2412.04158 | https://github.com/twibiral/LossVal | | | 
+| Artykuł                                                                                 | Autorski komentarz                                                                                                                                                                                                                                             | Kod                                        | Metryki                                                                                          |
+|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------|--------------------------------------------------------------------------------------------------|
+| Metashift                                                                               | zawarty w ramach opisu zbioru danych                                                                                                                                                                                                                           | https://github.com/Weixin-Liang/MetaShift/ | M                                                                                                |
+| Influence Functions                                                                     | paper zasugerowany na wykładzie, szczegółowy opis metody IF, kod do replikacji eksperymentów                                                                                                                                                                   | https://arxiv.org/abs/1703.04730           | Replikacja eksperymentów w artykule: http://bit.ly/gt-influence oraz  http://bit.ly/cl-influence |
+| TracIn                                                                                  | paper zasugerowany na wykładzie, szczegółowy opis metody TracIn, kod do replikacji eksperymentów                                                                                                                                                               | https://arxiv.org/abs/2002.08484           | https://github.com/frederick0329/TracIn                                                          |
+| TRAK                                                                                    | paper zasugerowany na wykładzie, szczegółowy opis metody TRAK, kod do replikacji eksperymentów                                                                                                                                                                 | https://arxiv.org/abs/2303.14186           | https://github.com/MadryLab/trak                                                                 |
+| DualDA                                                                                  | paper zasugerowany na wykładzie, szczegółowy opis metody DualDA, kod do replikacji eksperymentów                                                                                                                                                               | https://arxiv.org/abs/2402.12118v2         | https://github.com/gumityolcu/DualXDA                                                            |
+| Out-of-Distribution Generalization Analysis via Influence Function                      | Analiza wykorzystania IF do wykrywania danych spoza dystrybucji - do doczytania                                                                                                                                                                                | https://arxiv.org/abs/2101.08521           |                                                                                                  |
+| "Why did the Model Fail?": Attributing Model Performance Changes to Distribution Shifts | Wykorzystanie metod Shapelya do wyjaśnienia spadku performancu modelu na danych spoza dystrybucji - do doczytania, ścisle związane z tematem                                                                                                                   | https://arxiv.org/abs/2210.10769           |                                                                                                  |
+| LossVal                                                                                 | Wykorzystanie ważonej funkcji straty do identyfikacji przykładów, które można zaklasyfikować jako szum. Przykłady zawierają zbiór CIFAR10 więc jest potencjał do wykorzystania w naszym projekcie - do doczytania i potwierdzenia zgodności z tematem projektu | https://arxiv.org/pdf/2412.04158           | https://github.com/twibiral/LossVal                                                              | 
 
 <!-- LIME, SHAP Bartek; GradCAM Marcin; Saliency Kajetan -->
 <!-- | [LIME][]      | LIME                                 | https://github.com/marcotcr/lime                        |         |        |
