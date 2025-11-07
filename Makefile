@@ -3,8 +3,8 @@
 #################################################################################
 
 PROJECT_NAME = siwy
-PYTHON_VERSION = 3.10
-PYTHON_INTERPRETER = python
+PYTHON_VERSION = 3.11
+PYTHON_INTERPRETER = uv run python
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -16,7 +16,10 @@ PYTHON_INTERPRETER = python
 requirements:
 	uv sync
 	
-
+## Install Python dependencies
+.PHONY: env
+env:
+	cp .env.example .env
 
 
 ## Delete all compiled Python files
@@ -53,6 +56,7 @@ create_environment:
 	@echo ">>> New uv virtual environment created. Activate with:"
 	@echo ">>> Windows: .\\\\.venv\\\\Scripts\\\\activate"
 	@echo ">>> Unix/macOS: source ./.venv/bin/activate"
+	uv tool install ruff
 	
 
 

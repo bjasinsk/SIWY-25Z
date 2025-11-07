@@ -5,9 +5,9 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "siwy"
 version = "0.0.1"
-description = "A short description of the project."
+description = "Project for Explainable Artificial Intelligence course at WUT"
 authors = [
-  { name = "Your name (or your organization/company/team)" },
+  { name = "Jarczewski Marcin, Jasiński Bartosz,Rożej Kajetan" },
 ]
 license = { file = "LICENSE" }
 readme = "README.md"
@@ -28,10 +28,12 @@ dependencies = [
     "python-dotenv",
     "ruff",
     "scikit-learn",
+    "torch>=2.9.0",
+    "torchvision>=0.24.0",
     "tqdm",
     "typer",
 ]
-requires-python = "~=3.10.0"
+requires-python = "~=3.11.0"
 
 
 [tool.ruff]
@@ -46,3 +48,12 @@ extend-select = ["I"]  # Add import sorting
 known-first-party = ["siwy"]
 force-sort-within-sections = true
 
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
