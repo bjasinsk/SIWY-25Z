@@ -92,9 +92,9 @@ def get_dataloader(batch_size=256, num_workers=8, split='train', shuffle=False, 
     #                                        train=is_train,
     #                                        transform=transforms)
     if is_train:
-      dataset = ImageFolder(root=f'{DATA_DIR}/task1/task1/easy/train', transform=transforms)
+      dataset = ImageFolder(root=Path(f'{DATA_DIR}/task1/task1/easy/train'), transform=transforms)
     else:
-      dataset = ImageFolder(root=f'{DATA_DIR}/task1/task1/easy/val', transform=transforms)
+      dataset = ImageFolder(root=Path(f'{DATA_DIR}/task1/task1/easy/val'), transform=transforms)
 
 
     loader = torch.utils.data.DataLoader(dataset=dataset,
@@ -132,7 +132,7 @@ def train(model, loader, lr=0.4, epochs=24, momentum=0.9,
             scaler.update()
             scheduler.step()
         if ep in [12, 15, 18, 21, 23]:
-            torch.save(model.state_dict(), f'{DATA_DIR}/checkpoints/sd_{model_id}_epoch_{ep}.pt')
+            torch.save(model.state_dict(), f'{DATA_DIR}/checkpoints-2cls/sd_{model_id}_epoch_{ep}.pt')
 
     return model
 
@@ -140,38 +140,40 @@ def create_criterion(model, lr, momentum=0.9, weight_decay=5e-4):
     return SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
 
 if __name__ == "__main__":
-
+# TODO: fix num classes to 
 
     print(torch.cuda.is_available())
     # train_dataset = ImageFolder(root=f'{DATA_DIR}/task1/task1/easy/train', transform=transform)
     # val_dataset = ImageFolder(root=f'{DATA_DIR}/task1/task1/easy/val', transform=transform)
 
     
-    os.makedirs(f'{DATA_DIR}/checkpoints', exist_ok=True)
+    os.makedirs(f'{DATA_DIR}/checkpoints-2cls', exist_ok=True)
     loader_for_training = get_dataloader(batch_size=128, split='train', shuffle=True)
 
     # you can modify the for loop below to train more models
     for i in tqdm(range(1), desc='Training models..'):
-        model = construct_rn9().to(memory_format=torch.channels_last).cuda()
+        model = construct_rn9(2).to(memory_format=torch.channels_last).cuda()
         model = train(model, loader_for_training, model_id=i)
 
+    ckpt_files = sorted(list((DATA_DIR / Path('./checkpoints-2cls')).rglob('*.pt')))
+    # ckpts = [torch.load(ckpt), map_location='cpu' for ckpt in ckpt_files]
 
-    ckpt_files = sorted(list(Path(f'{DATA_DIR}/checkpoints').rglob('*.pt')))
-    ckpts = [torch.load(ckpt, map_location='cpu') for ckpt in ckpt_files]
 
     batch_size = 128
-    model = construct_rn9()
-    criterion = create_criterion(model, lr=0.4, momentum=0.9, weight_decay=5e-4)
-    weights = ckpts
+    model = construct_rn9(2)
+    criterion = CrossEntropyLoss(label_smoothing=0.0)
+    # create_criterion(model, lr=0.4, momentum=0.9, weight_decay=5e-4)
+    weights = ckpt_files
     train_loader = get_dataloader(batch_size=batch_size, split='train')
     test_loader = get_dataloader(batch_size=batch_size, split='val', augment=False)
     lr = 0.4
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     print(f'Using device: {device}')
+    print("len test loader:", len(test_loader.dataset))
     use_nested_loop_for_dot_product = False # via einsum
     float_labels = False # depends on your loss function
 
-
+   
     matrix = vectorized_calculate_tracin_score(
         model=model,
         criterion=criterion,
