@@ -20,6 +20,19 @@ Design proposal jest umieszczony w pliku [design_proposal.md](design_proposal.md
 
 A short description of the project.
 
+## Setup
+
+```bash
+make environment
+make install
+uv run wandb login
+```
+
+### Wandb integration
+- [ ] add datasets as artifacts https://docs.wandb.ai/models/artifacts
+- [ ] log models as artifacts https://docs.wandb.ai/models/artifacts
+
+
 ## Project Organization
 
 ```

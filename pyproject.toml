@@ -28,18 +28,20 @@ dependencies = [
     "python-dotenv",
     "ruff",
     "scikit-learn",
+    "seaborn>=0.13.2",
     "torch>=2.9.0",
     "torchvision>=0.24.0",
     "tqdm",
     "typer",
+    "wandb>=0.23.1",
 ]
 requires-python = "~=3.11.0"
 
 
 [tool.ruff]
-line-length = 99
-src = ["siwy"]
-include = ["pyproject.toml", "siwy/**/*.py"]
+line-length = 120
+src = ["siwy", "notebooks", "models"]
+include = ["pyproject.toml", "siwy/**/*.py", "notebooks/**/*.ipynb", "models/**/*.py"]
 
 [tool.ruff.lint]
 extend-select = ["I"]  # Add import sorting

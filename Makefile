@@ -12,13 +12,16 @@ PYTHON_INTERPRETER = uv run python
 
 
 ## Install Python dependencies
-.PHONY: requirements
-requirements:
-	uv sync
+.PHONY: install
+install:
+	uv sync --frozen
+	uv tool install pre-commit
+	uv run pre-commit install
+	uv tool install ruff
 	
 ## Install Python dependencies
-.PHONY: env
-env:
+.PHONY: dotenv
+dotenv:
 	cp .env.example .env
 
 
@@ -50,15 +53,12 @@ test:
 
 
 ## Set up Python interpreter environment
-.PHONY: create_environment
-create_environment:
+.PHONY: environment
+environment:
 	uv venv --python $(PYTHON_VERSION)
 	@echo ">>> New uv virtual environment created. Activate with:"
 	@echo ">>> Windows: .\\\\.venv\\\\Scripts\\\\activate"
 	@echo ">>> Unix/macOS: source ./.venv/bin/activate"
-	uv tool install ruff
-	
-
 
 
 #################################################################################
