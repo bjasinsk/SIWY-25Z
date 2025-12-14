@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -22,7 +23,8 @@ REPORTS_DIR = PROJ_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
 # Wandb configuration
-WANDB_PROJECT = "SIWY-25Z"
+WANDB_PROJECT = os.environ.get("WANDB_PROJECT")
+WANDB_ORG = os.environ.get("WANDB_ORG")
 
 # If tqdm is installed, configure loguru with tqdm.write
 # https://github.com/Delgan/loguru/issues/135
