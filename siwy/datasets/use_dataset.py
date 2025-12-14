@@ -3,7 +3,7 @@ import torch
 import typer
 import wandb
 
-from siwy.config import DATA_DIR, WANDB_ORG, WANDB_PROJECT
+from siwy.config import PROCESSED_DATA_DIR, WANDB_ORG, WANDB_PROJECT
 
 app = typer.Typer()
 
@@ -14,7 +14,7 @@ def main(
 ):
     with wandb.init(project=f"{WANDB_PROJECT}", job_type="example") as run:
         artifact = run.use_artifact(f"{WANDB_ORG}/{WANDB_PROJECT}/{dataset_name}:v0", type="dataset")
-        artifact_path = artifact.download(DATA_DIR)
+        artifact_path = artifact.download(PROCESSED_DATA_DIR)
 
     ds = torch.load(f"{artifact_path}/{dataset_name}.pt", weights_only=False)
     logger.info(f"Loaded dataset {dataset_name} with {len(ds)} samples and classes: {ds.classes}")
