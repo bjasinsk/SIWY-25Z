@@ -12,13 +12,10 @@ Skład zespołu:
 
 Design proposal jest umieszczony w pliku [design_proposal.md](design_proposal.md).
 
-# siwy
+## Datasets
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
-
-A short description of the project.
+- [Commercial Aircraft](https://www.kaggle.com/api/v1/datasets/download/nelyg8002000/commercial-aircraft-dataset)
+- [Dog and Cat](https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset)
 
 ## Setup
 
@@ -29,11 +26,17 @@ uv run wandb login
 ```
 
 ### Wandb integration
-- [ ] add datasets as artifacts https://docs.wandb.ai/models/artifacts
+
+- [x] add datasets as artifacts https://docs.wandb.ai/models/artifacts
 - [ ] log models as artifacts https://docs.wandb.ai/models/artifacts
 
-
 ## Project Organization
+
+We used template from the Cookiecutter Data Science project, see http://drivendata.github.io/cookiecutter-data-science/
+for more details.
+<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
+<img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
+</a>
 
 ```
 ├── LICENSE            <- Open-source license if one is chosen
