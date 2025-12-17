@@ -7,13 +7,25 @@ from torchvision.datasets import ImageFolder
 import typer
 import wandb
 
-from siwy.config import PROCESSED_DATA_DIR, WANDB_PROJECT
+from siwy.config import PROCESSED_DATA_DIR, WANDB_PROJECT, SEED
 from siwy.datasets.AirplaneDataset import AirplaneDataset as AirplaneDatasetClass
+from torch.utils.data import random_split
 
-DATASETS = {
+GENERATOR = torch.manual_seed(SEED)
+TORCH_DATASETS = {
     "ImageFolder": ImageFolder,
     "Airplane": AirplaneDatasetClass,
 }
+
+DATASETS = ["bus-and-truck-easy-val", "bus-and-truck-easy-train", "airplanes", "dog-and-cat"]
+
+DEFAULT_TRANSFORM = transforms.Compose(
+    [
+        transforms.RandomCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
 app = typer.Typer()
 
@@ -38,16 +50,11 @@ def main(
         raise typer.Exit(code=0)
 
     logger.info(f"Processing {dataset_name} at {dataset_dir}")
-    ds = DATASETS.get(cls, None)(
+    ds = TORCH_DATASETS.get(cls, None)(
         root=dataset_dir,
-        transform=transforms.Compose(
-            [
-                transforms.RandomCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ]
-        ),
+        transform=DEFAULT_TRANSFORM,
     )
+    train_ds, val_ds, test_ds = random_split(ds, [0.7, 0.2, 0.1], generator=GENERATOR)
 
     logger.info(f"Classes: {ds.classes}")
     logger.info(f"Dataset size: {len(ds)}")
@@ -55,7 +62,12 @@ def main(
     processed_path = PROCESSED_DATA_DIR / f"{dataset_name}.pt"
     logger.info(f"Saving processed dataset to {processed_path}")
 
-    torch.save(ds, processed_path)
+    torch.save({
+        "train": train_ds,
+        "val": val_ds,
+        "test": test_ds,
+        "classes": ds.classes,
+    }, processed_path)
 
     if not upload:
         logger.info(f"Saving processed dataset to {PROCESSED_DATA_DIR}")

@@ -79,7 +79,7 @@ def construct_rn18(num_classes: int):
     return newmodel
 
 
-MODELS = {"pretrained_resnet18": construct_rn18, "resnet9": construct_rn9}
+MODELS = {"resnet18-pretrained": construct_rn18, "resnet9": construct_rn9}
 
 if __name__ == "__main__":
     construct_rn18(10)

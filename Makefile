@@ -41,8 +41,8 @@ lint:
 ## Format source code with ruff
 .PHONY: format
 format:
-	ruff check --fix
 	ruff format
+	ruff check --fix
 
 
 
