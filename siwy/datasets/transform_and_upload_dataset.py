@@ -2,14 +2,14 @@ from pathlib import Path
 
 from loguru import logger
 import torch
+from torch.utils.data import random_split
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import typer
 import wandb
 
-from siwy.config import PROCESSED_DATA_DIR, WANDB_PROJECT, SEED
+from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
 from siwy.datasets.AirplaneDataset import AirplaneDataset as AirplaneDatasetClass
-from torch.utils.data import random_split
 
 GENERATOR = torch.manual_seed(SEED)
 TORCH_DATASETS = {
@@ -62,12 +62,15 @@ def main(
     processed_path = PROCESSED_DATA_DIR / f"{dataset_name}.pt"
     logger.info(f"Saving processed dataset to {processed_path}")
 
-    torch.save({
-        "train": train_ds,
-        "val": val_ds,
-        "test": test_ds,
-        "classes": ds.classes,
-    }, processed_path)
+    torch.save(
+        {
+            "train": train_ds,
+            "val": val_ds,
+            "test": test_ds,
+            "classes": ds.classes,
+        },
+        processed_path,
+    )
 
     if not upload:
         logger.info(f"Saving processed dataset to {PROCESSED_DATA_DIR}")

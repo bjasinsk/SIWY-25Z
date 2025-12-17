@@ -29,8 +29,9 @@ WANDB_ORG = os.environ.get("WANDB_ORG")
 # Seed
 SEED = 42
 
+
 def WANDB_DATASET_PATH(ds: str) -> str:
-    return f"{WANDB_ORG}/{WANDB_PROJECT}/{ds}:v0"
+    return f"{WANDB_ORG}/{WANDB_PROJECT}/{ds}:latest"
 
 
 # If tqdm is installed, configure loguru with tqdm.write
