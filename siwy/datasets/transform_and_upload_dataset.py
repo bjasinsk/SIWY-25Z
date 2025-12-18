@@ -19,13 +19,33 @@ TORCH_DATASETS = {
 
 DATASETS = ["bus-and-truck-easy-val", "bus-and-truck-easy-train", "airplanes", "dog-and-cat"]
 
+
+class PadTo224:
+    def __init__(self, fill=0):
+        self.fill = fill  # black
+
+    def __call__(self, img):
+        # img is PIL Image
+        w, h = img.size
+
+        pad_w = max(0, 224 - w)
+        pad_h = max(0, 224 - h)
+
+        # Pad equally on both sides
+        padding = (pad_w // 2, pad_h // 2, pad_w - pad_w // 2, pad_h - pad_h // 2)
+
+        return transforms.functional.pad(img, padding, fill=self.fill)
+
+
 DEFAULT_TRANSFORM = transforms.Compose(
     [
+        PadTo224(),
         transforms.RandomCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
+
 
 app = typer.Typer()
 

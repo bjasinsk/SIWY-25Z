@@ -157,7 +157,7 @@ def main(
         # train models
         for i in tqdm(range(1), desc="Training models.."):
             model = model.to(memory_format=torch.channels_last).cuda()
-            model = train_model(model, loader_for_training, model_id=i)
+            model = train_model(run, model, loader_for_training, model_id=i)
 
         logger.success("Training complete.")
 
