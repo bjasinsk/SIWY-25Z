@@ -79,7 +79,12 @@ def train_model(
         if ep in [12, 15, 18, 21, 23]:
             artifact_path = CKPTS_PATH / f"sd_{model_id}_epoch_{ep}.pt"
             torch.save(model.state_dict(), artifact_path)
-            run.log_artifact(wandb.Artifact(name=f"model-{model_id}-epoch-{ep}", type="model").add_file(artifact_path))
+            artifact = wandb.Artifact(
+                name=f"model-{model_id}-epoch-{ep}",
+                type="model",
+            )
+            artifact.add_file(artifact_path)
+            run.log_artifact(artifact)
 
     return model
 
