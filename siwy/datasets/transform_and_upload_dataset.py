@@ -2,7 +2,7 @@ from pathlib import Path
 
 from loguru import logger
 import torch
-from torch.utils.data import Subset, TensorDataset, random_split
+from torch.utils.data import random_split
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import typer
@@ -17,7 +17,14 @@ TORCH_DATASETS = {
     "Airplane": AirplaneDatasetClass,
 }
 
-DATASETS = ["bus-and-truck-easy-val", "bus-and-truck-easy-train", "airplanes", "dog-and-cat"]
+DATASETS = [
+    "bus-and-truck-easy-val",
+    "bus-and-truck-easy-train",
+    "airplanes",
+    "dog-and-cat",
+    "bus-and-truck-difficult-val",
+    "bus-and-truck-difficult-train",
+]
 
 DEFAULT_TRANSFORM = transforms.Compose(
     [
@@ -27,13 +34,6 @@ DEFAULT_TRANSFORM = transforms.Compose(
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
-
-
-def subset_to_tensordataset(subset: Subset) -> TensorDataset:
-    X = torch.stack([subset[i][0] for i in range(len(subset))])
-    y = torch.tensor([subset[i][1] for i in range(len(subset))])
-    return TensorDataset(X, y)
-
 
 app = typer.Typer()
 
@@ -63,9 +63,6 @@ def main(
         transform=DEFAULT_TRANSFORM,
     )
     train_ds, val_ds, test_ds = random_split(ds, [0.7, 0.2, 0.1], generator=GENERATOR)
-    train_ds = subset_to_tensordataset(train_ds)
-    val_ds = subset_to_tensordataset(val_ds)
-    test_ds = subset_to_tensordataset(test_ds)
 
     logger.info(f"Classes: {ds.classes}")
     logger.info(f"Dataset size: (train, val, test): ({len(train_ds)}, {len(val_ds)}, {len(test_ds)})")
@@ -105,6 +102,11 @@ Usage from root directory:
 
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-val" "data/raw/task2/easy/val" --overwrite --upload
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-train" "data/raw/task2/easy/train" --overwrite --upload
+
+uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-val" "data/raw/task2/difficult/val" --overwrite --upload
+uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-train" "data/raw/task2/difficult/train" --overwrite --upload
+
 uv run siwy/datasets/transform_and_upload_dataset.py "airplanes" "data/raw/1_Liner TF" --overwrite --cls Airplane --upload
+
 uv run siwy/datasets/transform_and_upload_dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload
 """
