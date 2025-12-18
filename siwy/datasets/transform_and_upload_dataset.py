@@ -17,7 +17,14 @@ TORCH_DATASETS = {
     "Airplane": AirplaneDatasetClass,
 }
 
-DATASETS = ["bus-and-truck-easy-val", "bus-and-truck-easy-train", "airplanes", "dog-and-cat"]
+DATASETS = [
+    "bus-and-truck-easy-val",
+    "bus-and-truck-easy-train",
+    "airplanes",
+    "dog-and-cat",
+    "bus-and-truck-difficult-val",
+    "bus-and-truck-difficult-train",
+]
 
 DEFAULT_TRANSFORM = transforms.Compose(
     [
@@ -95,6 +102,11 @@ Usage from root directory:
 
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-val" "data/raw/task2/easy/val" --overwrite --upload
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-train" "data/raw/task2/easy/train" --overwrite --upload
+
+uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-val" "data/raw/task2/difficult/val" --overwrite --upload
+uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-train" "data/raw/task2/difficult/train" --overwrite --upload
+
 uv run siwy/datasets/transform_and_upload_dataset.py "airplanes" "data/raw/1_Liner TF" --overwrite --cls Airplane --upload
+
 uv run siwy/datasets/transform_and_upload_dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload
 """
