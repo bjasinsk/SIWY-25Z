@@ -10,18 +10,23 @@ from torch import Tensor
 from torch.cuda.amp import GradScaler, autocast
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD, lr_scheduler
+from torch.utils.data import ConcatDataset
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
+from trak import TRAKer
 import typer
 from typing_extensions import Literal
 import wandb
 
 from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
-from siwy.datasets.transform_and_upload_dataset import DATASETS, DEFAULT_TRANSFORM
+from siwy.datasets.transform_and_upload_dataset import DATASETS
 
 app = typer.Typer()
 TRAINING_PATH = PROCESSED_DATA_DIR / "trak" / f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
+RESULTS_PATH = TRAINING_PATH / "results"
+
+GENERATOR = torch.manual_seed(42)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -95,7 +100,7 @@ def validate(model, val_loader):
     logger.info(f"Accuracy: {total_correct / total_num * 100:.1f}%")
 
 
-def plot_trak(ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor):
+def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor):
     for i in [7, 21, 22]:
         fig, axs = plt.subplots(ncols=7, figsize=(15, 3))
         fig.suptitle("Top scoring TRAK images from the train set")
@@ -105,14 +110,16 @@ def plot_trak(ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor):
         axs[0].axis("off")
         axs[0].set_title("Target image")
         axs[1].axis("off")
-        print(f"val class {ds_val[i][1]}")
+        logger.info(f"val class {ds_val[i][1]}")
         top_trak_scorers = scores[:, i].argsort()[-5:][::-1]
         for ii, train_im_ind in enumerate(top_trak_scorers):
-            print(f"train id ({train_im_ind}): {ds_train[train_im_ind][1]}")
+            logger.info(f"train id ({train_im_ind}): {ds_train[train_im_ind][1]}")
             axs[ii + 2].imshow(ds_train[train_im_ind][0].permute(1, 2, 0))
             axs[ii + 2].axis("off")
-        print("=" * 40)
+        logger.info("=" * 40)
         fig.show()
+        plt.savefig(RESULTS_PATH / f"trak_val_image_{i}.png")
+        run.log({"trak_results": wandb.Image(fig)})
 
 
 @app.command()
@@ -122,6 +129,7 @@ def main(
         help="The training method to use. Options are: " + ", ".join(MODELS.keys()),
     ),
     dataset=typer.Option(Literal[*DATASETS], help="Name of the dataset to process"),
+    batch_size: int = typer.Option(32, help="Batch size for training"),
 ):
     # start wandb run
     with wandb.init(project=f"{WANDB_PROJECT}", job_type="training") as run:
@@ -130,11 +138,13 @@ def main(
 
         # prepare dataset
         ds = torch.load(f"{artifact_path}/{dataset}.pt", weights_only=False)
-        logger.info(f"Loaded dataset {dataset} with {len(ds)} samples and classes: {ds.classes}")
+        train_ds = ds["train"]
+        val_test_ds = ConcatDataset([ds["val"], ds["test"]])
 
         CKPTS_PATH.mkdir(parents=True, exist_ok=True)
+        RESULTS_PATH.mkdir(parents=True, exist_ok=True)
         # get data loaders
-        loader_for_training = get_dataloader(batch_size=32, split="train", shuffle=True)
+        loader_for_training = get_dataloader(train_ds, batch_size=batch_size, shuffle=True)
         logger.info("Loaded data for training.")
         # train models
         for i in tqdm(range(1), desc="Training models.."):
@@ -143,44 +153,42 @@ def main(
 
         logger.success("Training complete.")
 
-    ckpt_files = sorted(list(CKPTS_PATH.rglob("*.pt")))
-    ckpts = [torch.load(ckpt, map_location="cpu") for ckpt in ckpt_files]
+        ckpt_files = sorted(list(CKPTS_PATH.rglob("*.pt")))
+        ckpts = [torch.load(ckpt, map_location="cpu") for ckpt in ckpt_files]
 
-    # validate, get model accuracy
-    validate(model, get_dataloader(None, batch_size=64))
+        # validate, get model accuracy
+        validate(model, get_dataloader(val_test_ds, batch_size=batch_size))
 
-    batch_size = 16
-    loader_train = get_dataloader(ds, batch_size=batch_size)
-    from trak import TRAKer
+        ## TRAK evaluation
+        logger.info("Starting TRAK evaluation...")
+        loader_train = get_dataloader(train_ds, batch_size=batch_size)
 
-    traker = TRAKer(model=model, task="image_classification", proj_dim=4096, train_set_size=len(loader_train.dataset))
-
-    for model_id, ckpt in enumerate(tqdm(ckpts)):
-        traker.load_checkpoint(ckpt, model_id=model_id)
-        for batch in tqdm(loader_train):
-            batch = [x.cuda() for x in batch]
-            traker.featurize(batch=batch, num_samples=batch[0].shape[0])
-
-    traker.finalize_features()
-
-    val_ds = None
-    loader_targets = get_dataloader(val_ds, batch_size=batch_size)
-
-    for model_id, ckpt in enumerate(tqdm(ckpts)):
-        traker.start_scoring_checkpoint(
-            exp_name="quickstart", checkpoint=ckpt, model_id=model_id, num_targets=len(loader_targets.dataset)
+        traker = TRAKer(
+            model=model, task="image_classification", proj_dim=4096, train_set_size=len(loader_train.dataset)
         )
-        for batch in loader_targets:
-            batch = [x.cuda() for x in batch]
-            traker.score(batch=batch, num_samples=batch[0].shape[0])
 
-    scores = traker.finalize_scores(exp_name="quickstart")
-    _scores = open_memmap(TRAINING_PATH / "trak_results" / "scores" / "quickstart.mmap")
+        for model_id, ckpt in enumerate(tqdm(ckpts)):
+            traker.load_checkpoint(ckpt, model_id=model_id)
+            for batch in tqdm(loader_train):
+                batch = [x.cuda() for x in batch]
+                traker.featurize(batch=batch, num_samples=batch[0].shape[0])
 
-    ds_train = ImageFolder(root="/content/task1/easy/train", transform=DEFAULT_TRANSFORM)
-    ds_val = ImageFolder(root="/content/task1/easy/val", transform=DEFAULT_TRANSFORM)
+        traker.finalize_features()
 
-    plot_trak(ds_train, ds_val, scores)
+        loader_targets = get_dataloader(val_test_ds, batch_size=batch_size)
+
+        for model_id, ckpt in enumerate(tqdm(ckpts)):
+            traker.start_scoring_checkpoint(
+                exp_name="quickstart", checkpoint=ckpt, model_id=model_id, num_targets=len(loader_targets.dataset)
+            )
+            for batch in loader_targets:
+                batch = [x.cuda() for x in batch]
+                traker.score(batch=batch, num_samples=batch[0].shape[0])
+
+        scores = traker.finalize_scores(exp_name="quickstart")
+        _scores = open_memmap(RESULTS_PATH / "scores" / "quickstart.mmap")
+
+        plot_trak(train_ds, val_test_ds, scores)
 
 
 if __name__ == "__main__":

@@ -17,8 +17,10 @@ def main(
         artifact_path = artifact.download(PROCESSED_DATA_DIR)
 
     ds = torch.load(f"{artifact_path}/{dataset_name}.pt", weights_only=False)
+    logger.info(len(ds["val"]))
+    logger.info(len(ds["test"]))
     logger.info(
-        f"Loaded dataset {dataset_name} with {len(ds['train'])} train samples, {len(ds['test'])} samples, {len(ds['val'])} samples and classes: {ds.classes}"
+        f"Loaded dataset {dataset_name} with {len(ds['train'])} train samples, {len(ds['test'])} samples, {len(ds['val'])} samples and classes: {ds['classes']}"
     )
 
 
