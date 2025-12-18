@@ -203,6 +203,12 @@ def main(
         scores = traker.finalize_scores(exp_name="quickstart")
         _scores = open_memmap(RESULTS_PATH / "scores" / "quickstart.mmap")
 
+        scores_artifact = wandb.Artifact(
+            name=f"trak-{DATETIME}-scores",
+            type="trak-scores",
+        )
+        scores_artifact.add_file(RESULTS_PATH / "scores" / "quickstart.mmap")
+        run.log_artifact(scores_artifact)
         plot_trak(train_ds, val_test_ds, scores)
 
 
