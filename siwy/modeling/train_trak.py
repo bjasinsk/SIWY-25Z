@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from loguru import logger
 from matplotlib import pyplot as plt
@@ -130,6 +130,7 @@ def main(
     ),
     dataset=typer.Option(Literal[*DATASETS], help="Name of the dataset to process"),
     batch_size: int = typer.Option(32, help="Batch size for training"),
+    num_classes: int = typer.Option(2, help="Number of classes in the dataset"),
 ):
     # start wandb run
     with wandb.init(project=f"{WANDB_PROJECT}", job_type="training") as run:
@@ -146,6 +147,13 @@ def main(
         # get data loaders
         loader_for_training = get_dataloader(train_ds, batch_size=batch_size, shuffle=True)
         logger.info("Loaded data for training.")
+
+        # construct model
+        model_fn = MODELS.get(model, None)
+        assert model_fn is not None, f"Model {model} not found in MODELS."
+        model = model_fn(num_classes=num_classes)
+        logger.info(f"Constructed model: {model}")
+
         # train models
         for i in tqdm(range(1), desc="Training models.."):
             model = model.to(memory_format=torch.channels_last).cuda()
