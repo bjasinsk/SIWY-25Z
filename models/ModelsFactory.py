@@ -73,10 +73,9 @@ def construct_rn18(num_classes: int):
     )
     model = resnet18(weights=ResNet18_Weights.DEFAULT)
     logger.info(model)
-    newmodel = torch.nn.Sequential(*(list(model.children())[:-1]))
-    newmodel.add_module("fc", torch.nn.Linear(in_features=512, out_features=num_classes, bias=True))
-    logger.info(newmodel)
-    return newmodel
+    model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
+    logger.info(model)
+    return model
 
 
 MODELS = {"resnet18-pretrained": construct_rn18, "resnet9": construct_rn9}

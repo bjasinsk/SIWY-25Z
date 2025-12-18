@@ -2,7 +2,7 @@ from pathlib import Path
 
 from loguru import logger
 import torch
-from torch.utils.data import random_split
+from torch.utils.data import Subset, TensorDataset, random_split
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import typer
@@ -19,32 +19,20 @@ TORCH_DATASETS = {
 
 DATASETS = ["bus-and-truck-easy-val", "bus-and-truck-easy-train", "airplanes", "dog-and-cat"]
 
-
-class PadTo224:
-    def __init__(self, fill=0):
-        self.fill = fill  # black
-
-    def __call__(self, img):
-        # img is PIL Image
-        w, h = img.size
-
-        pad_w = max(0, 224 - w)
-        pad_h = max(0, 224 - h)
-
-        # Pad equally on both sides
-        padding = (pad_w // 2, pad_h // 2, pad_w - pad_w // 2, pad_h - pad_h // 2)
-
-        return transforms.functional.pad(img, padding, fill=self.fill)
-
-
 DEFAULT_TRANSFORM = transforms.Compose(
     [
-        PadTo224(),
+        transforms.RandomCrop(224, pad_if_needed=True, fill=0),
         transforms.RandomCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
+
+
+def subset_to_tensordataset(subset: Subset) -> TensorDataset:
+    X = torch.stack([subset[i][0] for i in range(len(subset))])
+    y = torch.tensor([subset[i][1] for i in range(len(subset))])
+    return TensorDataset(X, y)
 
 
 app = typer.Typer()
@@ -75,9 +63,12 @@ def main(
         transform=DEFAULT_TRANSFORM,
     )
     train_ds, val_ds, test_ds = random_split(ds, [0.7, 0.2, 0.1], generator=GENERATOR)
+    train_ds = subset_to_tensordataset(train_ds)
+    val_ds = subset_to_tensordataset(val_ds)
+    test_ds = subset_to_tensordataset(test_ds)
 
     logger.info(f"Classes: {ds.classes}")
-    logger.info(f"Dataset size: {len(ds)}")
+    logger.info(f"Dataset size: (train, val, test): ({len(train_ds)}, {len(val_ds)}, {len(test_ds)})")
 
     processed_path = PROCESSED_DATA_DIR / f"{dataset_name}.pt"
     logger.info(f"Saving processed dataset to {processed_path}")
