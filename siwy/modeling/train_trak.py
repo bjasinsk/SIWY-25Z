@@ -22,7 +22,8 @@ from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.datasets.transform_and_upload_dataset import DATASETS
 
 app = typer.Typer()
-TRAINING_PATH = PROCESSED_DATA_DIR / "trak" / f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
+DATETIME = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+TRAINING_PATH = PROCESSED_DATA_DIR / "trak" / DATETIME
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
 RESULTS_PATH = TRAINING_PATH / "results"
 
@@ -80,14 +81,10 @@ def train_model(
             artifact_path = CKPTS_PATH / f"sd_{model_id}_epoch_{ep}.pt"
             torch.save(model.state_dict(), artifact_path)
             artifact = wandb.Artifact(
-                name=f"trak-{}-{}-model-{model_id}-epoch-{ep}",
+                name=f"trak-{DATETIME}-model-{model_id}-epoch-{ep}",
                 type="model",
             )
-            (artifact.
-
-
-
-             add_file(artifact_path))
+            artifact.add_file(artifact_path)
             run.log_artifact(artifact)
 
     return model
