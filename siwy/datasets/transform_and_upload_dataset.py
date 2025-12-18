@@ -2,18 +2,38 @@ from pathlib import Path
 
 from loguru import logger
 import torch
+from torch.utils.data import Subset, TensorDataset, random_split
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import typer
 import wandb
 
-from siwy.config import PROCESSED_DATA_DIR, WANDB_PROJECT
+from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
 from siwy.datasets.AirplaneDataset import AirplaneDataset as AirplaneDatasetClass
 
-DATASETS = {
+GENERATOR = torch.manual_seed(SEED)
+TORCH_DATASETS = {
     "ImageFolder": ImageFolder,
     "Airplane": AirplaneDatasetClass,
 }
+
+DATASETS = ["bus-and-truck-easy-val", "bus-and-truck-easy-train", "airplanes", "dog-and-cat"]
+
+DEFAULT_TRANSFORM = transforms.Compose(
+    [
+        transforms.RandomCrop(224, pad_if_needed=True, fill=0),
+        transforms.RandomCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
+
+
+def subset_to_tensordataset(subset: Subset) -> TensorDataset:
+    X = torch.stack([subset[i][0] for i in range(len(subset))])
+    y = torch.tensor([subset[i][1] for i in range(len(subset))])
+    return TensorDataset(X, y)
+
 
 app = typer.Typer()
 
@@ -38,24 +58,30 @@ def main(
         raise typer.Exit(code=0)
 
     logger.info(f"Processing {dataset_name} at {dataset_dir}")
-    ds = DATASETS.get(cls, None)(
+    ds = TORCH_DATASETS.get(cls, None)(
         root=dataset_dir,
-        transform=transforms.Compose(
-            [
-                transforms.RandomCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ]
-        ),
+        transform=DEFAULT_TRANSFORM,
     )
+    train_ds, val_ds, test_ds = random_split(ds, [0.7, 0.2, 0.1], generator=GENERATOR)
+    train_ds = subset_to_tensordataset(train_ds)
+    val_ds = subset_to_tensordataset(val_ds)
+    test_ds = subset_to_tensordataset(test_ds)
 
     logger.info(f"Classes: {ds.classes}")
-    logger.info(f"Dataset size: {len(ds)}")
+    logger.info(f"Dataset size: (train, val, test): ({len(train_ds)}, {len(val_ds)}, {len(test_ds)})")
 
     processed_path = PROCESSED_DATA_DIR / f"{dataset_name}.pt"
     logger.info(f"Saving processed dataset to {processed_path}")
 
-    torch.save(ds, processed_path)
+    torch.save(
+        {
+            "train": train_ds,
+            "val": val_ds,
+            "test": test_ds,
+            "classes": ds.classes,
+        },
+        processed_path,
+    )
 
     if not upload:
         logger.info(f"Saving processed dataset to {PROCESSED_DATA_DIR}")
@@ -77,8 +103,8 @@ if __name__ == "__main__":
 """
 Usage from root directory:
 
-uv run siwy/datasets/dataset.py "bus-and-truck-easy-val" "data/raw/task2/easy/val" --overwrite --upload
-uv run siwy/datasets/dataset.py "bus-and-truck-easy-train" "data/raw/task2/easy/train" --overwrite --upload
-uv run siwy/datasets/dataset.py "airplanes" "data/raw/1_Liner TF" --overwrite --cls Airplane --upload
-uv run siwy/datasets/dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload --cls DogAndCat
+uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-val" "data/raw/task2/easy/val" --overwrite --upload
+uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-train" "data/raw/task2/easy/train" --overwrite --upload
+uv run siwy/datasets/transform_and_upload_dataset.py "airplanes" "data/raw/1_Liner TF" --overwrite --cls Airplane --upload
+uv run siwy/datasets/transform_and_upload_dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload
 """

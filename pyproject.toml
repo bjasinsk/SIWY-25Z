@@ -34,6 +34,7 @@ dependencies = [
     "torch>=2.9.0",
     "torchvision>=0.24.0",
     "tqdm",
+    "traker>=0.3.2",
     "typer",
     "wandb>=0.23.1",
 ]

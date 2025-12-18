@@ -1851,6 +1851,7 @@ dependencies = [
     { name = "torch", version = "2.9.0+cu128", source = { registry = "https://download.pytorch.org/whl/cu128" }, marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "torchvision" },
     { name = "tqdm" },
+    { name = "traker" },
     { name = "typer" },
     { name = "wandb" },
 ]
@@ -1876,6 +1877,7 @@ requires-dist = [
     { name = "torch", marker = "sys_platform == 'linux' or sys_platform == 'win32'", specifier = ">=2.9.0", index = "https://download.pytorch.org/whl/cu128" },
     { name = "torchvision", specifier = ">=0.24.0" },
     { name = "tqdm" },
+    { name = "traker", specifier = ">=0.3.2" },
     { name = "typer" },
     { name = "wandb", specifier = ">=0.23.1" },
 ]
@@ -2120,6 +2122,18 @@ sdist = { url = "https://files.pythonhosted.org/packages/eb/79/72064e6a701c21830
 wheels = [
     { url = "https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f", size = 85359, upload-time = "2024-04-19T11:11:46.763Z" },
 ]
+
+[[package]]
+name = "traker"
+version = "0.3.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "torch", version = "2.9.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
+    { name = "torch", version = "2.9.0+cu128", source = { registry = "https://download.pytorch.org/whl/cu128" }, marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fe/7e/ad78d2e69053504391b7cac4d081b7c52204bae562d89f243641b2633251/traker-0.3.2.tar.gz", hash = "sha256:6a3702b7ab749c57c6d8838fad1772f90c12a58bda572f1e8c02628fd7f091ec", size = 36361, upload-time = "2024-01-17T19:18:23.236Z" }
 
 [[package]]
 name = "triton"
