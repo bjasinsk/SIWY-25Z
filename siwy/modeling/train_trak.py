@@ -80,10 +80,14 @@ def train_model(
             artifact_path = CKPTS_PATH / f"sd_{model_id}_epoch_{ep}.pt"
             torch.save(model.state_dict(), artifact_path)
             artifact = wandb.Artifact(
-                name=f"model-{model_id}-epoch-{ep}",
+                name=f"trak-{}-{}-model-{model_id}-epoch-{ep}",
                 type="model",
             )
-            artifact.add_file(artifact_path)
+            (artifact.
+
+
+
+             add_file(artifact_path))
             run.log_artifact(artifact)
 
     return model
@@ -137,6 +141,7 @@ def main(
     batch_size: int = typer.Option(32, help="Batch size for training"),
     num_classes: int = typer.Option(2, help="Number of classes in the dataset"),
 ):
+    # TODO: setup wandb config
     # start wandb run
     with wandb.init(project=f"{WANDB_PROJECT}", job_type="training") as run:
         artifact = run.use_artifact(WANDB_DATASET_PATH(dataset), type="dataset")
