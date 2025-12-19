@@ -1,8 +1,9 @@
 from pathlib import Path
 
 from loguru import logger
+from sklearn.model_selection import train_test_split
 import torch
-from torch.utils.data import random_split
+from torch.utils.data import Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import typer
@@ -45,6 +46,7 @@ def main(
     cls: str = typer.Option(default="ImageFolder", help="Class of the dataset to process"),
     upload: bool = typer.Option(default=False, help="Upload the processed dataset to WB"),
     overwrite: bool = typer.Option(default=False, help="Overwrite existing processed dataset"),
+    sample_size: int = typer.Option(default=None, help="Limit the dataset to a certain number of samples"),
 ):
     if not dataset_dir.is_dir():
         logger.error(f"Dataset directory {dataset_dir} does not exist.")
@@ -62,7 +64,31 @@ def main(
         root=dataset_dir,
         transform=DEFAULT_TRANSFORM,
     )
-    train_ds, val_ds, test_ds = random_split(ds, [0.7, 0.2, 0.1], generator=GENERATOR)
+
+    # Get labels for stratified sampling
+    labels = [ds.targets[i] if hasattr(ds, "targets") else ds[i][1] for i in range(len(ds))]
+
+    # Sample dataset if sample_size is provided (stratified)
+    indices = list(range(len(ds)))
+    if sample_size is not None:
+        indices, _, labels, _ = train_test_split(
+            indices, labels, train_size=sample_size, random_state=SEED, stratify=labels
+        )
+
+    # Split into train (70%), val (20%), test (10%) with stratification
+    train_indices, temp_indices, train_labels, temp_labels = train_test_split(
+        indices, labels, train_size=0.7, random_state=SEED, stratify=labels
+    )
+    val_indices, test_indices = train_test_split(
+        temp_indices,
+        train_size=2 / 3,  # 20% of total = 66.67% of remaining 30%
+        random_state=SEED,
+        stratify=temp_labels,
+    )
+
+    train_ds = Subset(ds, train_indices)
+    val_ds = Subset(ds, val_indices)
+    test_ds = Subset(ds, test_indices)
 
     logger.info(f"Classes: {ds.classes}")
     logger.info(f"Dataset size: (train, val, test): ({len(train_ds)}, {len(val_ds)}, {len(test_ds)})")
@@ -108,5 +134,5 @@ uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-tr
 
 uv run siwy/datasets/transform_and_upload_dataset.py "airplanes" "data/raw/1_Liner TF" --overwrite --cls Airplane --upload
 
-uv run siwy/datasets/transform_and_upload_dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload
+uv run siwy/datasets/transform_and_upload_dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload --sample-size 1000
 """

@@ -1,5 +1,6 @@
 import pathlib
 
+from PIL import Image
 from torch.utils.data import Dataset
 
 CLASS_NAME = "Airplane"
@@ -19,7 +20,8 @@ class AirplaneDataset(Dataset):
         return [CLASS_NAME]
 
     def __getitem__(self, idx):
-        img = self.img_labels[idx]
+        img_path = self.img_labels[idx]
+        img = Image.open(img_path).convert("RGB")
         if self.transform:
             img = self.transform(img)
         return img, CLASS_NAME
