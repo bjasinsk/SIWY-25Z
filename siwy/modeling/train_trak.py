@@ -22,7 +22,7 @@ from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.datasets.transform_and_upload_dataset import DATASETS
 
 app = typer.Typer()
-DATETIME = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+DATETIME = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 TRAINING_PATH = PROCESSED_DATA_DIR / "trak" / DATETIME
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
 RESULTS_PATH = TRAINING_PATH / "results"
