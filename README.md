@@ -25,11 +25,6 @@ make install
 uv run wandb login
 ```
 
-### Wandb integration
-
-- [x] add datasets as artifacts https://docs.wandb.ai/models/artifacts
-- [ ] log models as artifacts https://docs.wandb.ai/models/artifacts
-
 ## Project Organization
 
 We used template from the Cookiecutter Data Science project, see http://drivendata.github.io/cookiecutter-data-science/
