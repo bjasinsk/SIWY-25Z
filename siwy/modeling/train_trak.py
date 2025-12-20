@@ -2,7 +2,6 @@ from datetime import datetime
 
 from loguru import logger
 from matplotlib import pyplot as plt
-from models.ModelsFactory import MODELS
 import numpy as np
 from numpy.lib.format import open_memmap
 import torch
@@ -18,12 +17,13 @@ import typer
 from typing_extensions import Literal
 import wandb
 
-from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
+from siwy.config import MODELS_DIR, PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.datasets.transform_and_upload_dataset import DATASETS
+from siwy.modeling.ModelsFactory import MODELS
 
 app = typer.Typer()
 DATETIME = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-TRAINING_PATH = PROCESSED_DATA_DIR / "trak" / DATETIME
+TRAINING_PATH = MODELS_DIR / "trak" / DATETIME
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
 RESULTS_PATH = TRAINING_PATH / "results"
 
@@ -332,7 +332,7 @@ def plot_scores(
     use_wandb: bool = typer.Option(False, help="Whether to log to wandb"),
 ):
     """Generate TRAK plots from pre-computed scores without training."""
-    output_dir = PROCESSED_DATA_DIR / "trak" / "plots" / DATETIME
+    output_dir = MODELS_DIR / "trak" / "plots" / DATETIME
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Load scores
