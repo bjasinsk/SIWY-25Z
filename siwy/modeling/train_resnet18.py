@@ -1,6 +1,7 @@
 from datetime import datetime
 import pathlib
 from pathlib import Path
+import platform
 
 from loguru import logger
 from matplotlib import pyplot as plt
@@ -20,10 +21,10 @@ import typer
 from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 import wandb
 
-pathlib.PosixPath = pathlib.WindowsPath
+if platform.system() == "Windows":
+    pathlib.PosixPath = pathlib.WindowsPath
 
 app = typer.Typer()
-# DATETIME = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 DATETIME = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 TRAINING_PATH = PROCESSED_DATA_DIR / "tracin" / DATETIME
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
