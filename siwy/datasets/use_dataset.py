@@ -1,11 +1,15 @@
+import pathlib
+
 from loguru import logger
 import torch
 import typer
-import wandb
 
 from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
+import wandb
 
 app = typer.Typer()
+
+pathlib.PosixPath = pathlib.WindowsPath
 
 
 @app.command()
@@ -43,7 +47,9 @@ def main(
 
 
 if __name__ == "__main__":
-    main("dog-and-cat")
+    app()
+    # main("dog-and-cat")
+    # main("airplanes")
 
 """
 Usage from root directory:

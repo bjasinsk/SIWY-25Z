@@ -7,10 +7,10 @@ from torch.utils.data import Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 import typer
-import wandb
 
 from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
 from siwy.datasets.AirplaneDataset import AirplaneDataset as AirplaneDatasetClass
+import wandb
 
 GENERATOR = torch.manual_seed(SEED)
 TORCH_DATASETS = {
@@ -29,12 +29,13 @@ DATASETS = [
 
 DEFAULT_TRANSFORM = transforms.Compose(
     [
-        transforms.RandomCrop(224, pad_if_needed=True, fill=0),
-        transforms.RandomCrop(224),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
+
 
 app = typer.Typer()
 

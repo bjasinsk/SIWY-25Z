@@ -16,10 +16,10 @@ from tqdm import tqdm
 from trak import TRAKer
 import typer
 from typing_extensions import Literal
-import wandb
 
 from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.datasets.transform_and_upload_dataset import DATASETS
+import wandb
 
 app = typer.Typer()
 DATETIME = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
