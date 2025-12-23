@@ -3,9 +3,9 @@ from pathlib import Path
 from loguru import logger
 from tqdm import tqdm
 import typer
-import wandb
 
 from siwy.config import MODELS_DIR, PROCESSED_DATA_DIR, WANDB_PROJECT
+import wandb
 
 app = typer.Typer()
 
