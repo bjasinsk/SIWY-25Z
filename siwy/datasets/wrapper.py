@@ -9,14 +9,10 @@ class LabelToIdxWrapper(Dataset):
         self.transform = transform
 
     def __len__(self):
-        # TODO: RESTORE THIS
-        # return len(self.base_ds)
-        return 1
+        return 5
 
     def __getitem__(self, idx):
         img, label = self.base_ds[idx]
-        # if self.transform:
-        #     img = self.transform(img)
         if isinstance(label, str):
             label = self.class_to_idx[label]
         return img, torch.tensor(label, dtype=torch.long)

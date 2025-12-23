@@ -5,7 +5,6 @@ import platform
 
 from loguru import logger
 from matplotlib import pyplot as plt
-from models.ModelsFactory import MODELS
 import numpy as np
 import torch
 from torch import Tensor
@@ -19,6 +18,7 @@ from tqdm import tqdm
 import typer
 
 from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
+from siwy.ModelsFactory import MODELS
 import wandb
 
 if platform.system() == "Windows":
@@ -205,7 +205,7 @@ def main(
     dataset: str = typer.Option("dog-and-cat", help="Name of the dataset to process"),
     # dataset=typer.Option(Literal[*DATASETS], help="Name of the dataset to process"),
     batch_size: int = typer.Option(32, help="Batch size for training"),
-    num_classes: int = typer.Option(2, help="Number of classes in the dataset"),
+    num_classes: int = typer.Option(3, help="Number of classes in the dataset"),
 ):
     # TODO: setup wandb config
     # start wandb run
