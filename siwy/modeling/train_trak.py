@@ -88,6 +88,8 @@ def train_model(
                 loss = loss_fn(out, labs)
 
             scaler.scale(loss).backward()
+            scaler.unscale_(opt)  # Unscale before clipping
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Prevent gradient explosion
             scaler.step(opt)
             scaler.update()
             scheduler.step()
@@ -269,6 +271,13 @@ def train(
         logger.success("Training complete.")
 
         ckpt_files = sorted(list(CKPTS_PATH.rglob("*.pt")))
+        if not ckpt_files:
+            logger.warning("No checkpoints found. TRAK requires at least one checkpoint.")
+            logger.warning("Re-enable checkpoint saving by uncommenting checkpoint_epochs calculation.")
+            logger.info("Skipping TRAK evaluation.")
+            return
+
+        logger.info(f"Loading {len(ckpt_files)} checkpoints...")
         ckpts = [torch.load(ckpt, map_location="cpu") for ckpt in ckpt_files]
 
         # validate, get model accuracy
@@ -279,12 +288,51 @@ def train(
         loader_train = get_dataloader(train_ds, batch_size=batch_size)
 
         traker = TRAKer(
-            model=model, task="image_classification", proj_dim=4096, train_set_size=len(loader_train.dataset)
+            model=model,
+            task="image_classification",
+            proj_dim=4096,
+            train_set_size=len(loader_train.dataset),
+            device="cuda",
+            use_half_precision=False,  # Use float32 - crucial for models with large outputs
         )
 
+        # Check if we have unusable checkpoints - if so, warn and skip TRAK
+        logger.info("Checking checkpoint validity...")
+        unusable_ckpts = []
+        for i, ckpt in enumerate(ckpts):
+            try:
+                max_weight = max(v.abs().max().item() for v in ckpt.values() if isinstance(v, torch.Tensor))
+                if max_weight > 1e10:
+                    unusable_ckpts.append(i)
+                    logger.error(f"Checkpoint {i} has exploded weights (max={max_weight:.2e})")
+            except Exception as e:
+                logger.error(f"Error checking checkpoint {i}: {e}")
+                unusable_ckpts.append(i)
+
+        if unusable_ckpts:
+            logger.error(f"Found {len(unusable_ckpts)} unusable checkpoints out of {len(ckpts)}")
+            logger.error("These checkpoints have catastrophically exploded weights and cannot be used for TRAK.")
+            logger.error("Recommendation: Retrain with gradient clipping to get stable checkpoints.")
+            logger.error("Gradient clipping has been added to train_model() for future training runs.")
+            raise ValueError(
+                "Cannot perform TRAK analysis with exploded checkpoints. "
+                "Please retrain the model with stable settings. "
+                "Gradient clipping (max_norm=1.0) has been added to prevent future explosions."
+            )
+
         for model_id, ckpt in enumerate(tqdm(ckpts)):
+            # Fix NaN BatchNorm running stats by resetting to defaults
+            for key in list(ckpt.keys()):
+                if isinstance(ckpt[key], torch.Tensor) and torch.isnan(ckpt[key]).any():
+                    if "running_mean" in key:
+                        ckpt[key] = torch.zeros_like(ckpt[key])
+                        logger.warning(f"Reset NaN {key} to zeros")
+                    elif "running_var" in key:
+                        ckpt[key] = torch.ones_like(ckpt[key])
+                        logger.warning(f"Reset NaN {key} to ones")
+
             traker.load_checkpoint(ckpt, model_id=model_id)
-            for batch in tqdm(loader_train):
+            for batch_idx, batch in enumerate(tqdm(loader_train)):
                 batch = [x.cuda() for x in batch]
                 traker.featurize(batch=batch, num_samples=batch[0].shape[0])
 
@@ -384,7 +432,7 @@ if __name__ == "__main__":
     app()
 
 """
-uv run train --model resnet18-pretrained --dataset dog-and-cat --batch_size 32 --num_classes 2 --lr 0.4 --epochs 24 --momentum 0.9 --weight_decay 5e-4 --lr_peak_epoch 5 --label_smoothing 0.0 --validate_every_n_epochs 3 --early_stop_patience 5 --checkpoint_interval 5 --last_k_epochs 30 --trak_plot_image_ids "7,21,22"
+uv run siwy/modeling/train_trak.py train --model resnet18-pretrained --dataset dog-and-cat --batch_size 32 --num_classes 2 --lr 0.4 --epochs 24 --momentum 0.9 --weight_decay 5e-4 --lr_peak_epoch 5 --label_smoothing 0.0 --validate_every_n_epochs 3 --early_stop_patience 5 --checkpoint_interval 5 --last_k_epochs 30 --trak_plot_image_ids "7,21,22"
 
-uv run plot_scores --dataset dog-and-cat --scores_path /path/to/scores.mmap --batch_size 32 --num_classes 2 --trak_plot_image_ids "7,21,22" --use_wandb
+uv run siwy/modeling/train_trak.py plot_scores --dataset dog-and-cat --scores_path /path/to/scores.mmap --batch_size 32 --num_classes 2 --trak_plot_image_ids "7,21,22" --use_wandb
 """
