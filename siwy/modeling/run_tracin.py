@@ -181,14 +181,13 @@ def main(dataset="dog-and-cat", batch_size=5, num_classes=3, lr=0.001, epochs=No
     )
 
     # --- ZAPISZ MACIERZ DO WANDB ---
-    torch.save(matrix, "tracin_score_matrix.pt")
+    matrix_path = MODELS_DIR / "tracin_score_matrix.pt"
+    torch.save(matrix, matrix_path)
     artifact = wandb.Artifact(f"tracin-matrix-{dataset}", type="result")
-    artifact.add_file("tracin_score_matrix.pt")
+    artifact.add_file(matrix_path)
     run.log_artifact(artifact)
 
-    plot_tracin_top_contributors(
-        run, train_loader, test_loader, matrix, test_indices=list(range(len(test_loader))), top_k=TOP_K
-    )
+    plot_tracin_top_contributors(run, train_loader, test_loader, matrix, test_indices=[0, 1, 2, 3, 4], top_k=TOP_K)
 
     run.finish()
 

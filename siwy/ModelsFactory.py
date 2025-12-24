@@ -1,4 +1,3 @@
-from loguru import logger
 import torch
 from torchvision.models import ResNet18_Weights, resnet18
 
@@ -72,9 +71,8 @@ def construct_rn18(num_classes: int, weights=ResNet18_Weights.DEFAULT):
         "num_classes must be positive integer for resnet18"
     )
     model = resnet18(weights=ResNet18_Weights.DEFAULT)
-    logger.debug(model)
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
-    logger.debug(model)
+    # logger.debug(model)
     return model
 
 
