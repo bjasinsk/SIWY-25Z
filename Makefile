@@ -14,6 +14,7 @@ PYTHON_INTERPRETER = uv run python
 ## Install Python dependencies
 .PHONY: install
 install:
+	# uv sync --frozen --extra cuda
 	uv sync --frozen
 	uv tool install pre-commit
 	uv run pre-commit install
