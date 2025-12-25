@@ -3,13 +3,13 @@ import pathlib
 from loguru import logger
 import torch
 import typer
-
-from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 import wandb
 
-app = typer.Typer()
+from siwy.config import IS_WINDOWS, PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 
-pathlib.PosixPath = pathlib.WindowsPath
+app = typer.Typer()
+if IS_WINDOWS:
+    pathlib.PosixPath = pathlib.WindowsPath
 
 
 @app.command()

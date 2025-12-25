@@ -4,38 +4,11 @@ from loguru import logger
 from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Subset
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
 import typer
-
-from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
-from siwy.datasets.AirplaneDataset import AirplaneDataset as AirplaneDatasetClass
 import wandb
 
-GENERATOR = torch.manual_seed(SEED)
-TORCH_DATASETS = {
-    "ImageFolder": ImageFolder,
-    "Airplane": AirplaneDatasetClass,
-}
-
-DATASETS = [
-    "bus-and-truck-easy-val",
-    "bus-and-truck-easy-train",
-    "airplanes",
-    "dog-and-cat",
-    "bus-and-truck-difficult-val",
-    "bus-and-truck-difficult-train",
-]
-
-DEFAULT_TRANSFORM = transforms.Compose(
-    [
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]
-)
-
+from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
+from siwy.datasets.common import DEFAULT_TRANSFORM, TORCH_DATASETS
 
 app = typer.Typer()
 

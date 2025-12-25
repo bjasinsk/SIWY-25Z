@@ -70,7 +70,7 @@ def construct_rn18(num_classes: int, weights=ResNet18_Weights.DEFAULT):
     assert num_classes is not None and isinstance(num_classes, int) and num_classes > 0, (
         "num_classes must be positive integer for resnet18"
     )
-    model = resnet18(weights=ResNet18_Weights.DEFAULT)
+    model = resnet18(weights=weights)
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
     # logger.debug(model)
     return model

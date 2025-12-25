@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import platform
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -43,3 +44,5 @@ try:
     logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True)
 except ModuleNotFoundError:
     pass
+
+IS_WINDOWS = platform.system() == "Windows"

@@ -12,14 +12,15 @@ from torch.cuda.amp import autocast
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD, lr_scheduler
 from torch.utils.data import ConcatDataset, Subset
-from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 import typer
-
-from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
-from siwy.ModelsFactory import MODELS
 import wandb
+
+from siwy.common import DEVICE
+from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
+from siwy.datasets.transform_and_upload_dataset import DEFAULT_TRANSFORM
+from siwy.ModelsFactory import MODELS
 
 if platform.system() == "Windows":
     pathlib.PosixPath = pathlib.WindowsPath
@@ -30,9 +31,6 @@ TRAINING_PATH = PROCESSED_DATA_DIR / "tracin" / DATETIME
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
 RESULTS_PATH = TRAINING_PATH / "results"
 
-GENERATOR = torch.manual_seed(42)
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 def get_dataloader(ds, batch_size=256, num_workers=8, shuffle=False):
     assert ds is not None, "Dataset must be provided to create DataLoader."
@@ -41,14 +39,7 @@ def get_dataloader(ds, batch_size=256, num_workers=8, shuffle=False):
     else:
         base_ds = ds
     if hasattr(base_ds, "transform"):
-        base_ds.transform = transforms.Compose(
-            [
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ]
-        )
+        base_ds.transform = DEFAULT_TRANSFORM
     loader = torch.utils.data.DataLoader(dataset=ds, shuffle=shuffle, batch_size=batch_size, num_workers=num_workers)
     return loader
 
@@ -91,8 +82,8 @@ def train_model(
                 print("Sample labels:", labs[:10])
                 print("Labels dtype:", labs.dtype)
                 print("Labels min/max:", labs.min().item(), labs.max().item())
-            ims = ims.cuda()
-            labs = labs.cuda()
+            ims = ims.to(DEVICE)
+            labs = labs.to(DEVICE)
             opt.zero_grad(set_to_none=True)
             out = model(ims)
             loss = loss_fn(out, labs)
@@ -113,8 +104,8 @@ def train_model(
             val_batches = 0
             with torch.no_grad():
                 for ims, labs in loader_val:
-                    ims = ims.cuda()
-                    labs = labs.cuda()
+                    ims = ims.to(DEVICE)
+                    labs = labs.to(DEVICE)
                     out = model(ims)
                     loss = loss_fn(out, labs)
                     val_loss += loss.item()
@@ -164,8 +155,8 @@ def validate(model, val_loader):
     with torch.no_grad():
         total_correct, total_num = 0.0, 0.0
         for ims, labs in tqdm(val_loader):
-            ims = ims.cuda()
-            labs = labs.cuda()
+            ims = ims.to(DEVICE)
+            labs = labs.to(DEVICE)
             with autocast():
                 out = model(ims)
                 total_correct += out.argmax(1).eq(labs).sum().cpu().item()
@@ -234,7 +225,7 @@ def main(
 
         # train models
         for i in tqdm(range(1), desc="Training models.."):
-            model = model.to(memory_format=torch.channels_last).cuda()
+            model = model.to(memory_format=torch.channels_last).to(DEVICE)
             model = train_model(run, model, loader_for_training, loader_for_validation, model_id=i)
 
         logger.success("Training complete.")
