@@ -7,6 +7,8 @@ CLASS_NAME = "Airplane"
 
 
 class AirplaneDataset(Dataset):
+    ARTIFACT_NAME = "airplanes"
+
     def __init__(self, root: pathlib.Path, transform=None):
         self.img_dir = root
         self.transform = transform

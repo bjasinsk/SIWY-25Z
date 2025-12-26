@@ -10,6 +10,24 @@ app = typer.Typer()
 
 
 @app.command()
+def trak():
+    # TODO: implement trak - plot_no_train with optional wandb getting/logging
+    pass
+
+
+@app.command()
+def tracin():
+    # TODO: implement tracin - plot_no_train with optional wandb getting/logging
+    pass
+
+
+@app.command()
+def dualda():
+    # TODO: implement dualda functionality
+    pass
+
+
+@app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
     input_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
