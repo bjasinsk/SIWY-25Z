@@ -35,4 +35,4 @@ def load_dataset(dataset_name: str):
     if dataset_name not in DATASETS:
         raise ValueError(f"Dataset {dataset_name} is not recognized. Available datasets: {DATASETS}")
 
-    return torch.load(PROCESSED_DATA_DIR / f"{dataset_name}.pt", weights_only=True)
+    return torch.load(PROCESSED_DATA_DIR / f"{dataset_name}.pt", weights_only=False)

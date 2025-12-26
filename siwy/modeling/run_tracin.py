@@ -88,7 +88,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
                     artifact_root_dir_epoch.mkdir(parents=True, exist_ok=True)
                     artifact.download(root=artifact_root_dir_epoch)
 
-            ckpt_files = list(Path(artifact_root_dir).glob("**/*.pt"))
+            ckpt_files = sorted(list(Path(artifact_root_dir).glob("**/*.pt")))
             logger.debug(f"ckpt_files: {ckpt_files}")
             assert len(ckpt_files) > 0, "No checkpoint found in artifact!"
             # Załaduj pierwszy checkpoint do modelu (np. epoch_1)
@@ -136,7 +136,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         # --- SAVE SCORES TO WANDB ---
         matrix_path = MODELS_DIR / "tracin_score_matrix.pt"
         torch.save(matrix, matrix_path)
-        artifact = wandb.Artifact(f"tracin-matrix-{dataset}", type="tracin-scores")
+        artifact = wandb.Artifact(f"scores/tracin-{dataset}", type="tracin-scores")
         artifact.add_file(matrix_path)
         run.log_artifact(artifact)
 
