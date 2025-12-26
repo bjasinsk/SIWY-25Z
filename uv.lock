@@ -1920,7 +1920,7 @@ requires-dist = [
     { name = "torch", marker = "sys_platform == 'linux' or sys_platform == 'win32'", specifier = ">=2.9.0", index = "https://download.pytorch.org/whl/cu128" },
     { name = "torchvision", specifier = ">=0.24.0" },
     { name = "tqdm" },
-    { name = "tracin-pytorch", git = "https://github.com/Percival33/TracIn-PyTorch.git?rev=dbe9e4bb" },
+    { name = "tracin-pytorch", git = "https://github.com/Percival33/TracIn-PyTorch.git?rev=963352d2" },
     { name = "traker", extras = ["fast"], specifier = ">=0.3.2" },
     { name = "traker", extras = ["fast"], marker = "extra == 'cuda'", specifier = ">=0.3.2" },
     { name = "typer" },
@@ -2153,8 +2153,8 @@ wheels = [
 
 [[package]]
 name = "tracin-pytorch"
-version = "0.1.0"
-source = { git = "https://github.com/Percival33/TracIn-PyTorch.git?rev=dbe9e4bb#dbe9e4bb4b9223433ba6fdafb765ce5f0431d6b8" }
+version = "0.1.1"
+source = { git = "https://github.com/Percival33/TracIn-PyTorch.git?rev=963352d2#963352d24babcf1ccabb3c2eab94da1051c07a88" }
 dependencies = [
     { name = "click" },
     { name = "torch", version = "2.9.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
