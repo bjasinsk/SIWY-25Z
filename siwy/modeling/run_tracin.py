@@ -5,8 +5,6 @@ from loguru import logger
 import matplotlib.pyplot as plt
 import torch
 from torch.nn import CrossEntropyLoss
-
-# TODO: import tracin from uv
 from tracin_pytorch.tracin import vectorized_calculate_tracin_score
 import wandb
 
