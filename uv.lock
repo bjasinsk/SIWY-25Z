@@ -1920,7 +1920,7 @@ requires-dist = [
     { name = "torch", marker = "sys_platform == 'linux' or sys_platform == 'win32'", specifier = ">=2.9.0", index = "https://download.pytorch.org/whl/cu128" },
     { name = "torchvision", specifier = ">=0.24.0" },
     { name = "tqdm" },
-    { name = "tracin-pytorch", git = "https://github.com/Percival33/TracIn-PyTorch.git?rev=963352d2" },
+    { name = "tracin-pytorch", git = "https://github.com/Percival33/TracIn-PyTorch.git?rev=936b045" },
     { name = "traker", extras = ["fast"], specifier = ">=0.3.2" },
     { name = "traker", extras = ["fast"], marker = "extra == 'cuda'", specifier = ">=0.3.2" },
     { name = "typer" },

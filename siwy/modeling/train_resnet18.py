@@ -1,28 +1,24 @@
 from datetime import datetime
 import pathlib
 from pathlib import Path
-import platform
 
 from loguru import logger
-from matplotlib import pyplot as plt
 import numpy as np
 import torch
-from torch import Tensor
 from torch.cuda.amp import autocast
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD, lr_scheduler
 from torch.utils.data import ConcatDataset, Subset
-from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 import typer
 import wandb
 
 from siwy.common import DEVICE
-from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
+from siwy.config import IS_WINDOWS, PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.datasets.transform_and_upload_dataset import DEFAULT_TRANSFORM
 from siwy.ModelsFactory import MODELS
 
-if platform.system() == "Windows":
+if IS_WINDOWS:
     pathlib.PosixPath = pathlib.WindowsPath
 
 app = typer.Typer()
@@ -163,28 +159,6 @@ def validate(model, val_loader):
                 total_num += ims.shape[0]
 
     logger.info(f"Accuracy: {total_correct / total_num * 100:.1f}%")
-
-
-def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor):
-    for i in [7, 21, 22]:
-        fig, axs = plt.subplots(ncols=7, figsize=(15, 3))
-        fig.suptitle("Top scoring TRAK images from the train set")
-
-        axs[0].imshow(ds_val[i][0].permute(1, 2, 0))
-
-        axs[0].axis("off")
-        axs[0].set_title("Target image")
-        axs[1].axis("off")
-        logger.info(f"val class {ds_val[i][1]}")
-        top_trak_scorers = scores[:, i].argsort()[-5:][::-1]
-        for ii, train_im_ind in enumerate(top_trak_scorers):
-            logger.info(f"train id ({train_im_ind}): {ds_train[train_im_ind][1]}")
-            axs[ii + 2].imshow(ds_train[train_im_ind][0].permute(1, 2, 0))
-            axs[ii + 2].axis("off")
-        logger.info("=" * 40)
-        fig.show()
-        plt.savefig(RESULTS_PATH / f"trak_val_image_{i}.png")
-        run.log({"trak_results": wandb.Image(fig)})
 
 
 @app.command()

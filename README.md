@@ -10,12 +10,13 @@ Skład zespołu:
 
 ## Design proposal
 
-Design proposal jest umieszczony w pliku [design_proposal.md](design_proposal.md).
+Design proposal jest umieszczony w pliku [design_proposal.md](./docs/design_proposal.md).
 
 ## Datasets
 
 - [Commercial Aircraft](https://www.kaggle.com/api/v1/datasets/download/nelyg8002000/commercial-aircraft-dataset)
 - [Dog and Cat](https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset)
+- Bus and Truck Images Dataset (to be uploaded to kaggle) # TODO: provide link
 
 ## Setup
 
@@ -25,10 +26,9 @@ make install
 uv run wandb login
 ```
 
-### Wandb integration
+## Usage
+TODO: uruchomienie projektu
 
-- [x] add datasets as artifacts https://docs.wandb.ai/models/artifacts
-- [ ] log models as artifacts https://docs.wandb.ai/models/artifacts
 
 ## Project Organization
 
