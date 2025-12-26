@@ -139,7 +139,7 @@ def main(
                 artifact_root_dir_epoch.mkdir(parents=True, exist_ok=True)
                 artifact.download(root=artifact_root_dir_epoch)
 
-        ckpt_files = list(Path(artifact_root_dir).glob("**/*.pt"))
+        ckpt_files = sorted(list(Path(artifact_root_dir).glob("**/*.pt")))
         logger.debug(f"ckpt_files: {ckpt_files}")
         assert len(ckpt_files) > 0, "No checkpoint found in artifact!"
 
