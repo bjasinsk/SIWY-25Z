@@ -37,12 +37,14 @@ def plot_tracin_top_contributors(
         ims, _ = batch
         test_imgs.extend([im for im in ims])
 
+    summary_table = wandb.Table(columns=["test_id", "train_id", "score"])
+
     for test_idx in test_indices:
         scores = tracin_matrix[:, test_idx]
         top_indices = torch.argsort(scores, descending=True)[:top_k]
+        summary_table.add_data(test_idx, top_indices.cpu().tolist(), scores[top_indices].cpu().tolist())
+
         logger.info(f"Test idx: {test_idx}, top indices: {top_indices}, scores: {scores[top_indices]}")
-        run.log_text(f"Test idx: {test_idx}, top indices: {top_indices}, scores: {scores[top_indices]}")
-        run.log({f"tracin_{dataset}_{test_idx}_scores": wandb.Table(data=scores[top_indices].cpu().numpy())})
         fig, axs = plt.subplots(1, top_k + 1, figsize=(3 * (top_k + 1), 3))
         test_img = denormalize(test_imgs[test_idx].cpu()).clamp(0, 1)
         axs[0].imshow(test_img.permute(1, 2, 0).numpy())
@@ -58,6 +60,8 @@ def plot_tracin_top_contributors(
         plt.savefig(fig_path)
         run.log({f"tracin_{dataset}_{test_idx}": wandb.Image(fig)})
         plt.close(fig)
+
+    run.log({f"tracin_{dataset}_scores": summary_table})
 
 
 def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_classes=3, lr=0.001, epochs=None, top_k=5):
