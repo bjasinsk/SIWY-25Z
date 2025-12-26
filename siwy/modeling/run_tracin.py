@@ -25,7 +25,9 @@ USE_LOCAL = False
 
 
 # TODO: move to common utils with plot_trak
-def plot_tracin_top_contributors(run, train_loader, test_loader, tracin_matrix, test_indices, top_k=5):
+def plot_tracin_top_contributors(
+    run, train_loader, test_loader, tracin_matrix, test_indices, top_k=5, dataset="dog-and-cat"
+):
     train_imgs = []
     for batch in train_loader:
         ims, _ = batch
@@ -38,7 +40,9 @@ def plot_tracin_top_contributors(run, train_loader, test_loader, tracin_matrix, 
     for test_idx in test_indices:
         scores = tracin_matrix[:, test_idx]
         top_indices = torch.argsort(scores, descending=True)[:top_k]
-
+        logger.info(f"Test idx: {test_idx}, top indices: {top_indices}, scores: {scores[top_indices]}")
+        run.log_text(f"Test idx: {test_idx}, top indices: {top_indices}, scores: {scores[top_indices]}")
+        run.log({f"tracin_{dataset}_{test_idx}_scores": wandb.Table(data=scores[top_indices].cpu().numpy())})
         fig, axs = plt.subplots(1, top_k + 1, figsize=(3 * (top_k + 1), 3))
         test_img = denormalize(test_imgs[test_idx].cpu()).clamp(0, 1)
         axs[0].imshow(test_img.permute(1, 2, 0).numpy())
@@ -50,9 +54,9 @@ def plot_tracin_top_contributors(run, train_loader, test_loader, tracin_matrix, 
             axs[i + 1].set_title(f"Top {i + 1}")
             axs[i + 1].axis("off")
         plt.tight_layout()
-        fig_path = FIGURES_DIR / f"tracin_dogcat_{test_idx}.png"
+        fig_path = FIGURES_DIR / f"tracin_{dataset}_{test_idx}.png"
         plt.savefig(fig_path)
-        run.log({f"tracin_dogcat_{test_idx}": wandb.Image(fig)})
+        run.log({f"tracin_{dataset}_{test_idx}": wandb.Image(fig)})
         plt.close(fig)
 
 

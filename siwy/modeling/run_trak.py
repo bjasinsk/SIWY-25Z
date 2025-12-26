@@ -67,7 +67,7 @@ def get_dataloader(ds, batch_size=256, num_workers=8, shuffle=False):
 
 
 # TODO: move to common utils with plot_tracin_top_contributors
-def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, top_k=5):
+def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, top_k=5, dataset="dog-and-cat"):
     for i in range(len(ds_val)):
         fig, axs = plt.subplots(ncols=7, figsize=(15, 3))
         fig.suptitle("Top scoring TRAK images from the train set")
@@ -79,13 +79,16 @@ def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, t
         axs[1].axis("off")
         logger.info(f"val class {ds_val[i][1]}")
         top_trak_scorers = scores[:, i].argsort()[-top_k:][::-1]
+        logger.info(f"Test idx: {i}, top indices: {top_trak_scorers}, scores: {scores[top_trak_scorers]}")
+        run.log_text(f"trak_{dataset}_val_image_{i}_scores: {wandb.Table(data=scores[top_trak_scorers].cpu().numpy())}")
+        run.log({f"trak_{dataset}_val_image_{i}_scores": wandb.Table(data=scores[top_trak_scorers].cpu().numpy())})
         for ii, train_im_ind in enumerate(top_trak_scorers):
             logger.info(f"train id ({train_im_ind}): {ds_train[train_im_ind][1]}")
             axs[ii + 2].imshow(denormalize(ds_train[train_im_ind][0].permute(1, 2, 0)))
             axs[ii + 2].axis("off")
         logger.info("=" * 40)
         fig.show()
-        plt.savefig(FIGURES_DIR / f"trak_dogcat_val_image_{i}.png")
+        plt.savefig(FIGURES_DIR / f"trak_{dataset}_val_image_{i}.png")
         run.log({"trak_results": wandb.Image(fig)})
 
 
