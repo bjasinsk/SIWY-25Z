@@ -200,7 +200,7 @@ def main(
 
         # --- SAVE SCORES TO WANDB ---
         scores_artifact = wandb.Artifact(
-            name=f"scores/trak-{dataset}",
+            name=f"trak-{dataset}",
             type="trak-scores",
         )
         scores_artifact.add_file(RESULTS_PATH / "scores" / "quickstart.mmap")

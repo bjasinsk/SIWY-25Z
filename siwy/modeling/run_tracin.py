@@ -115,8 +115,8 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         if hasattr(train_ds.dataset, "transform"):
             train_ds.dataset.transform = DEFAULT_TRANSFORM
 
-        train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=4)
-        test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=4)
+        train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=2)
+        test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=2)
 
         # --- TRACIN ---
         criterion = CrossEntropyLoss(label_smoothing=0.0, reduction="none")
@@ -136,7 +136,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         # --- SAVE SCORES TO WANDB ---
         matrix_path = MODELS_DIR / "tracin_score_matrix.pt"
         torch.save(matrix, matrix_path)
-        artifact = wandb.Artifact(f"scores/tracin-{dataset}", type="tracin-scores")
+        artifact = wandb.Artifact(f"tracin-{dataset}", type="tracin-scores")
         artifact.add_file(matrix_path)
         run.log_artifact(artifact)
 
