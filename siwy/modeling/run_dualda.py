@@ -4,7 +4,7 @@ from pathlib import Path
 from loguru import logger
 import matplotlib.pyplot as plt
 import torch
-from torch.nn import CrossEntropyLoss
+import torch.nn as nn
 import wandb
 
 from siwy.common import DEVICE, denormalize
@@ -14,7 +14,7 @@ from siwy.datasets.common import DEFAULT_TRANSFORM, load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
 from siwy.ModelsFactory import construct_rn18
 
-from dualDA.explainers import DualDA
+from dual_da_src.explainers import DualDA
 
 if IS_WINDOWS:
     pathlib.PosixPath = pathlib.WindowsPath
@@ -25,40 +25,60 @@ LOCAL_CKPT_PATH = PROJ_ROOT / "artifacts" / "cat-dog-2025-12-23-17-17-44-model-0
 USE_LOCAL = False
 
 
+
+class ModelWrapper(nn.Module):
+    def __init__(self, original_model):
+        super().__init__()
+        self.original_model = original_model
+        
+        # In ResNet, the classifier is named 'fc'
+        self.classifier = original_model.fc
+        
+        # To get the 'features', we take everything except the fc layer
+        # We wrap them in a Sequential so they can be called together
+        self.features = nn.Sequential(*list(original_model.children())[:-1], nn.Flatten())
+
+    def forward(self, x):
+        # We use the original model's forward pass logic
+        return self.original_model(x)
+    
+
 # TODO: move to common utils with plot_trak
 def plot_dualda_results(
     run, train_loader, test_loader, dualda_matrix, test_indices, top_k=5, dataset="dog-and-cat"
 ):
-    train_imgs = []
-    for batch in train_loader:
-        ims, _ = batch
-        train_imgs.extend([im for im in ims])
-    test_imgs = []
-    for batch in test_loader:
-        ims, _ = batch
-        test_imgs.extend([im for im in ims])
+    train_ds = train_loader.dataset
+    test_ds = test_loader.dataset
 
     summary_table = wandb.Table(columns=["test_id", "train_id", "score"])
 
     for test_idx in test_indices:
         scores = dualda_matrix[:, test_idx]
+        
         top_indices = torch.argsort(scores, descending=True)[:top_k]
+
         summary_table.add_data(test_idx, top_indices.cpu().tolist(), scores[top_indices].cpu().tolist())
 
-        logger.info(f"Test idx: {test_idx}, top indices: {top_indices}, scores: {scores[top_indices]}")
         fig, axs = plt.subplots(1, top_k + 1, figsize=(3 * (top_k + 1), 3))
-        test_img = denormalize(test_imgs[test_idx].cpu()).clamp(0, 1)
+        
+        # Load only the 1 required test image
+        test_img_tensor, _ = test_ds[test_idx]
+        test_img = denormalize(test_img_tensor.cpu()).clamp(0, 1)
+        
         axs[0].imshow(test_img.permute(1, 2, 0).numpy())
-        axs[0].set_title("Test sample")
+        axs[0].set_title(f"Test {test_idx}")
         axs[0].axis("off")
+
         for i, idx in enumerate(top_indices):
-            train_img = denormalize(train_imgs[idx].cpu()).clamp(0, 1)
+            # Load only the specific top-k training images
+            train_img_tensor, _ = train_ds[int(idx)]
+            train_img = denormalize(train_img_tensor.cpu()).clamp(0, 1)
+            
             axs[i + 1].imshow(train_img.permute(1, 2, 0).numpy())
-            axs[i + 1].set_title(f"Top {i + 1}")
+            axs[i + 1].set_title(f"Rank {i + 1}")
             axs[i + 1].axis("off")
+            
         plt.tight_layout()
-        fig_path = FIGURES_DIR / f"dualda_{dataset}_{test_idx}.png"
-        plt.savefig(fig_path)
         run.log({f"dualda_{dataset}_{test_idx}": wandb.Image(fig)})
         plt.close(fig)
 
@@ -124,34 +144,45 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
             train_ds.dataset.transform = DEFAULT_TRANSFORM
 
         train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=2)
-        test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=2)
+        test_loader = torch.utils.data.DataLoader(test_ds, batch_size=1, shuffle=False, num_workers=2)
 
         # --- DUALDA ---
 
-        C = 0.001
-        device = "cuda"
-        cache_dir = "/content/cache_dir"
-        features_dir = "/content/features_dir"
-
+        C = 0.01
+        cache_dir = "./content/cache_dir"
+        features_dir = "./content/features_dir"
+        model_wrapped = ModelWrapper(model)
+        
         explainer = DualDA(
-            model,
-            train_ds,  # Changed from 'train' function to 'train_dataset'
-            device=device,
+            model_wrapped,
+            train_ds,
+            device=DEVICE,
             dir=cache_dir,
             features_dir=features_dir,
+            normalize=True,
             C=C,
         )
 
+        explainer.train()
+        result = list()
+
+        for example in test_loader:
+            preds = model(example[0]).argmax(dim=-1)
+            contribution = explainer.explain(example[0], preds)
+            result.append(contribution)
+    
+        result = torch.stack(result, dim=1)
+
         # --- SAVE SCORES TO WANDB ---
         matrix_path = MODELS_DIR / "dualda_score_matrix.pt"
-        torch.save(explainer, matrix_path)
+        torch.save(result, matrix_path)
         artifact = wandb.Artifact(f"dualda-{dataset}", type="dudalda-scores")
         artifact.add_file(matrix_path)
         run.log_artifact(artifact)
 
         # --- PLOT RESULTS ---
         plot_dualda_results(
-            run, train_loader, test_loader, explainer, test_indices=list(range(top_k)), top_k=top_k
+            run, train_loader, test_loader, result, test_indices=list(range(top_k)), top_k=top_k
         )
 
     logger.success("DualDA finished successfully!")
