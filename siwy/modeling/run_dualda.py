@@ -35,7 +35,6 @@ class DualDAModelWrapper(nn.Module):
     def forward(self, x):
         return self.original_model(x)
 
-
 def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_classes=3, lr=0.001, epochs=None, top_k=5):
     if epochs is None:
         epochs = [8]
