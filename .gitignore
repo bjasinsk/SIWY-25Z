@@ -196,3 +196,7 @@ wandb/
 
 #
 siwy/modeling/TracInPyTorch/*
+scikit-learn-dual/
+dual_da_src
+content
+models/dog-and-cat
