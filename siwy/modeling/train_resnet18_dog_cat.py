@@ -1,10 +1,8 @@
 from datetime import datetime
 import pathlib
 from pathlib import Path
-import platform
 
 from loguru import logger
-from matplotlib import pyplot as plt
 import numpy as np
 import torch
 from torch.cuda.amp import autocast
@@ -14,14 +12,11 @@ from torch.utils.data import ConcatDataset, Subset
 from tqdm import tqdm
 import typer
 
-from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
-from siwy.ModelsFactory import MODELS
-import wandb
-
 from siwy.common import DEVICE
 from siwy.config import IS_WINDOWS, PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.datasets.transform_and_upload_dataset import DEFAULT_TRANSFORM
 from siwy.ModelsFactory import MODELS
+import wandb
 
 if IS_WINDOWS:
     pathlib.PosixPath = pathlib.WindowsPath

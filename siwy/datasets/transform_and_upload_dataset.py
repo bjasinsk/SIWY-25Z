@@ -7,35 +7,10 @@ from torch.utils.data import Subset
 import typer
 
 from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
-from siwy.datasets.AirplaneDataset import AirplaneDataset as AirplaneDatasetClass
+from siwy.datasets.common import DEFAULT_TRANSFORM, TORCH_DATASETS
 import wandb
 
 GENERATOR = torch.manual_seed(SEED)
-TORCH_DATASETS = {
-    "ImageFolder": ImageFolder,
-    "Airplane": AirplaneDatasetClass,
-}
-
-DATASETS = [
-    "bus-and-truck-easy-val",
-    "bus-and-truck-easy-train",
-    "airplanes",
-    "dog-and-cat",
-    "bus-and-truck-difficult-val",
-    "bus-and-truck-difficult-train",
-]
-
-DEFAULT_TRANSFORM = transforms.Compose(
-    [
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]
-)
-
-from siwy.datasets.common import DEFAULT_TRANSFORM, TORCH_DATASETS
-
 app = typer.Typer()
 
 

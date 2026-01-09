@@ -6,7 +6,6 @@ from loguru import logger
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import wandb
 
 from siwy.common import DEVICE, denormalize
 from siwy.config import IS_WINDOWS, MODELS_DIR, PROJ_ROOT
@@ -14,6 +13,7 @@ from siwy.datasets.CatDogConfig import CAT_AND_DOG_MODEL_ARTIFACT_TEMPLATE, CLAS
 from siwy.datasets.common import DEFAULT_TRANSFORM, load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
 from siwy.ModelsFactory import construct_rn18
+import wandb
 
 if IS_WINDOWS:
     pathlib.PosixPath = pathlib.WindowsPath
