@@ -106,14 +106,23 @@ if __name__ == "__main__":
 
 """
 Usage from root directory:
-
+# bus-and-truck (task2)
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-val" "data/raw/task2/easy/val" --overwrite --upload --no-stratify
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-easy-train" "data/raw/task2/easy/train" --overwrite --upload --no-stratify
 
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-val" "data/raw/task2/difficult/val" --overwrite --upload --no-stratify
 uv run siwy/datasets/transform_and_upload_dataset.py "bus-and-truck-difficult-train" "data/raw/task2/difficult/train" --overwrite --upload --no-stratify
 
+# horse-and-elephant (task3)
+uv run siwy/datasets/transform_and_upload_dataset.py "horse-and-elephant-easy-val" "data/raw/task3/easy/val" --overwrite --upload --no-stratify
+uv run siwy/datasets/transform_and_upload_dataset.py "horse-and-elephant-easy-train" "data/raw/task3/easy/train" --overwrite --upload --no-stratify
+
+uv run siwy/datasets/transform_and_upload_dataset.py "horse-and-elephant-difficult-val" "data/raw/task3/difficult/val" --overwrite --upload --no-stratify
+uv run siwy/datasets/transform_and_upload_dataset.py "horse-and-elephant-difficult-train" "data/raw/task3/difficult/train" --overwrite --upload --no-stratify
+
+# airplanes
 uv run siwy/datasets/transform_and_upload_dataset.py "airplanes" "data/raw/1_Liner TF" --overwrite --cls Airplane --upload --no-stratify
 
+# dog-and-cat
 uv run siwy/datasets/transform_and_upload_dataset.py "dog-and-cat" "data/raw/PetImages" --overwrite --upload --sample-size 1000
 """
