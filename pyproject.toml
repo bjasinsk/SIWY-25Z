@@ -35,7 +35,7 @@ dependencies = [
     "torchvision>=0.24.0",
     "tqdm",
     "tracin-pytorch",
-    "traker[fast]>=0.3.2",
+    "traker>=0.3.2",
     "typer",
     "wandb>=0.23.1",
 ]

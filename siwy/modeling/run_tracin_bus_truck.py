@@ -9,7 +9,7 @@ from tracin_pytorch.tracin import vectorized_calculate_tracin_score
 
 from siwy.common import DEVICE, denormalize
 from siwy.config import FIGURES_DIR, IS_WINDOWS, MODELS_DIR, PROJ_ROOT
-from siwy.datasets.CatDogConfig import CAT_AND_DOG_MODEL_ARTIFACT_TEMPLATE, CLASS_TO_IDX
+from siwy.datasets.BusTruckConfig import BUS_AND_TRUCK_MODEL_ARTIFACT_TEMPLATE, CLASS_TO_IDX
 from siwy.datasets.common import DEFAULT_TRANSFORM, load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
 from siwy.ModelsFactory import construct_rn18
@@ -19,7 +19,7 @@ if IS_WINDOWS:
     pathlib.PosixPath = pathlib.WindowsPath
 
 # TODO: fix this file
-LOCAL_CKPT_PATH = PROJ_ROOT / "artifacts" / "cat-dog-2025-12-23-17-17-44-model-0-epoch-7-v0"
+LOCAL_CKPT_PATH = PROJ_ROOT / "artifacts" / "bus-truck-easy-2025-12-30-21-35-28-model-0-epoch-2-v0" / "best_model.pt"
 
 USE_LOCAL = False
 
@@ -64,7 +64,15 @@ def plot_tracin_top_contributors(
     run.log({f"tracin_{dataset}_scores": summary_table})
 
 
-def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_classes=3, lr=0.001, epochs=None, top_k=5):
+def main(
+    dataset="bus-and-truck-easy-train",
+    ood_dataset="airplanes",
+    batch_size=5,
+    num_classes=3,
+    lr=0.001,
+    epochs=None,
+    top_k=5,
+):
     if epochs is None:
         epochs = [0, 1, 2, 4, 6, 8]
     model = construct_rn18(num_classes=num_classes, weights=None).to(DEVICE)
@@ -89,7 +97,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         if not USE_LOCAL:
             # TODO: improve loading multiple epochs
             for epoch in epochs:
-                artifact = run.use_artifact(CAT_AND_DOG_MODEL_ARTIFACT_TEMPLATE.format(epoch), type="model")
+                artifact = run.use_artifact(BUS_AND_TRUCK_MODEL_ARTIFACT_TEMPLATE.format(epoch), type="model")
 
                 artifact_root_dir_epoch = artifact_root_dir / f"epoch_{epoch}"
                 if not artifact_root_dir_epoch.exists():  # TODO: fix this check
@@ -113,7 +121,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         dog_cat_ds = load_dataset(dataset)
         airplane_ds = load_dataset(ood_dataset)
         logger.debug(f"Airplanes dataset: {airplane_ds}")
-        train_ds = dog_cat_ds["train"]
+        train_ds = dog_cat_ds
         test_ds = airplane_ds["test"]
         # TODO: get better idicies for airplane dataset
         test_ds = LabelToIdxWrapper(base_ds=test_ds, class_to_idx=CLASS_TO_IDX, transform=DEFAULT_TRANSFORM)
@@ -150,31 +158,43 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
 
         # --- PLOT RESULTS ---
         plot_tracin_top_contributors(
-            run, train_loader, test_loader, matrix, test_indices=list(range(top_k)), top_k=top_k
+            run,
+            train_loader,
+            test_loader,
+            matrix,
+            test_indices=list(range(top_k)),
+            top_k=top_k,
+            dataset="bus-and-truck-easy-train",
         )
 
     logger.success("Tracin finished successfully!")
 
 
 # TODO: move to common utils with plot_trak
-def plot_no_train(batch_size, dataset="dog-and-cat", ood_dataset="airplanes", top_k=5):
-    with wandb.init(project="SIWY-25Z", job_type="tracin-wyniki") as run:
+def plot_no_train(batch_size, dataset="bus-and-truck-easy-train", ood_dataset="airplanes", top_k=5):
+    with wandb.init(project="SIWY-25Z", job_type="tracin-results-bus-truck") as run:
         dog_cat_ds = load_dataset(dataset)
         airplane_ds = load_dataset(ood_dataset)
         logger.debug(f"Airplanes dataset: {airplane_ds}")
-        train_ds = dog_cat_ds["train"]
+        train_ds = dog_cat_ds
         test_ds = airplane_ds["test"]
         test_ds = LabelToIdxWrapper(base_ds=test_ds, class_to_idx=CLASS_TO_IDX, transform=DEFAULT_TRANSFORM)
         train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=4)
         test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=4)
 
         plot_tracin_top_contributors(
-            run, train_loader, test_loader, tracin_matrix=torch.load("tracin_score_matrix.pt"), test_idx=0, top_k=top_k
+            run,
+            train_loader,
+            test_loader,
+            tracin_matrix=torch.load("tracin_score_matrix.pt"),
+            test_idx=0,
+            top_k=top_k,
+            dataset="bus-and-truck-easy-train",
         )
 
     logger.success("plotting Tracin finished successfully!")
 
 
 if __name__ == "__main__":
-    main()
+    main("bus-and-truck-easy-train")
     # plot_no_train(16)

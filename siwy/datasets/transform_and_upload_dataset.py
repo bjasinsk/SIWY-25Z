@@ -5,10 +5,10 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Subset
 import typer
-import wandb
 
 from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
 from siwy.datasets.common import DEFAULT_TRANSFORM, TORCH_DATASETS
+import wandb
 
 app = typer.Typer()
 
