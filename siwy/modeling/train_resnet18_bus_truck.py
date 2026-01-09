@@ -11,7 +11,7 @@ from torch import Tensor
 from torch.cuda.amp import autocast
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD, lr_scheduler
-from torch.utils.data import ConcatDataset, Subset
+from torch.utils.data import Subset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
@@ -26,7 +26,7 @@ if platform.system() == "Windows":
 
 app = typer.Typer()
 DATETIME = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-TRAINING_PATH = PROCESSED_DATA_DIR / "tracin" / DATETIME
+TRAINING_PATH = PROCESSED_DATA_DIR / "bus-and-truck" / DATETIME
 CKPTS_PATH = TRAINING_PATH / "checkpoints"
 RESULTS_PATH = TRAINING_PATH / "results"
 
@@ -202,28 +202,38 @@ def main(
         "resnet18-pretrained",
         help="The training method to use. Options are: " + ", ".join(MODELS.keys()),
     ),
-    dataset: str = typer.Option("dog-and-cat", help="Name of the dataset to process"),
-    # dataset=typer.Option(Literal[*DATASETS], help="Name of the dataset to process"),
+    train_dataset: str = typer.Option("bus-and-truck-easy-train", help="Name of the training dataset"),
+    val_dataset: str = typer.Option("bus-and-truck-easy-val", help="Name of the validation dataset"),
     batch_size: int = typer.Option(32, help="Batch size for training"),
     num_classes: int = typer.Option(3, help="Number of classes in the dataset"),
 ):
     # TODO: setup wandb config
     # start wandb run
     with wandb.init(project=f"{WANDB_PROJECT}", job_type="training") as run:
-        artifact = run.use_artifact(WANDB_DATASET_PATH(dataset), type="dataset")
-        artifact_path = artifact.download(PROCESSED_DATA_DIR)
+        # Download train dataset
+        train_artifact = run.use_artifact(WANDB_DATASET_PATH(train_dataset), type="dataset")
+        train_artifact_path = train_artifact.download(PROCESSED_DATA_DIR)
+        train_ds = torch.load(Path(train_artifact_path) / f"{train_dataset}.pt", weights_only=False)["train"]
+
+        # Download val dataset
+        val_artifact = run.use_artifact(WANDB_DATASET_PATH(val_dataset), type="dataset")
+        val_artifact_path = val_artifact.download(PROCESSED_DATA_DIR)
+        val_ds = torch.load(Path(val_artifact_path) / f"{val_dataset}.pt", weights_only=False)["val"]
+
+        # artifact = run.use_artifact(WANDB_DATASET_PATH(dataset), type="dataset")
+        # artifact_path = artifact.download(PROCESSED_DATA_DIR)
 
         # prepare dataset
         # ds = torch.load(f"{artifact_path}/{dataset}.pt", weights_only=False)
-        ds = torch.load(Path(artifact_path) / f"{dataset}.pt", weights_only=False)
-        train_ds = ds["train"]
-        val_test_ds = ConcatDataset([ds["val"], ds["test"]])
+        # ds = torch.load(Path(artifact_path) / f"{dataset}.pt", weights_only=False)
+        # train_ds = ds["train"]
+        # val_test_ds = ConcatDataset([ds["val"], ds["test"]])
 
         CKPTS_PATH.mkdir(parents=True, exist_ok=True)
         RESULTS_PATH.mkdir(parents=True, exist_ok=True)
         # get data loaders
         loader_for_training = get_dataloader(train_ds, batch_size=batch_size, shuffle=True)
-        loader_for_validation = get_dataloader(val_test_ds, batch_size=batch_size, shuffle=False)
+        loader_for_validation = get_dataloader(val_ds, batch_size=batch_size, shuffle=False)
         logger.info("Loaded data for training.")
 
         # construct model
@@ -240,7 +250,7 @@ def main(
         logger.success("Training complete.")
 
         # validate, get model accuracy
-        validate(model, get_dataloader(val_test_ds, batch_size=batch_size))
+        validate(model, get_dataloader(val_ds, batch_size=batch_size))
 
 
 if __name__ == "__main__":
