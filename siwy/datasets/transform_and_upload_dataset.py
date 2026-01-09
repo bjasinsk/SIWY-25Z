@@ -10,7 +10,6 @@ from siwy.config import PROCESSED_DATA_DIR, SEED, WANDB_PROJECT
 from siwy.datasets.common import DEFAULT_TRANSFORM, TORCH_DATASETS
 import wandb
 
-GENERATOR = torch.manual_seed(SEED)
 app = typer.Typer()
 
 
