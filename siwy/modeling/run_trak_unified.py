@@ -30,7 +30,7 @@ from siwy.ModelsFactory import construct_rn18
 # Apply Windows compatibility fixes
 setup_windows_compatibility()
 
-app = typer.Typer()
+# app = typer.Typer()
 
 
 def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, top_k: int, dataset: str):
@@ -52,7 +52,7 @@ def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, t
         fig.suptitle("Top scoring TRAK images from the train set")
 
         # Show target image
-        axs[0].imshow(denormalize(ds_val[i][0].permute(1, 2, 0)).clamp(0, 1))
+        axs[0].imshow(denormalize(ds_val[i][0]).permute(1, 2, 0).clamp(0, 1))
         axs[0].axis("off")
         axs[0].set_title("Target image")
         axs[1].axis("off")
@@ -76,7 +76,7 @@ def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, t
         # Show top contributing training images
         for ii, train_im_ind in enumerate(top_trak_scorers):
             logger.info(f"train id ({train_im_ind}): {ds_train[train_im_ind][1]}")
-            axs[ii + 2].imshow(denormalize(ds_train[train_im_ind][0].permute(1, 2, 0)))
+            axs[ii + 2].imshow(denormalize(ds_train[train_im_ind][0]).permute(1, 2, 0))
             axs[ii + 2].axis("off")
 
         logger.info("=" * 40)
@@ -87,7 +87,7 @@ def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, t
     run.log({f"trak_{dataset}_scores": summary_table})
 
 
-@app.command()
+# @app.command()
 def main(
     dataset: str = typer.Option(
         "dog-and-cat", help="Dataset: dog-and-cat | bus-and-truck-easy-train | horse-and-elephant-easy-train"
@@ -223,4 +223,4 @@ def main(
 
 
 if __name__ == "__main__":
-    app()
+    main(dataset="bus-and-truck-easy-train", epochs=None, ood_dataset="airplanes", batch_size=32, top_k=5)
