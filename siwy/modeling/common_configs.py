@@ -41,7 +41,7 @@ DATASET_CONFIGS = {
     "horse-and-elephant-easy-train": {
         "artifact_template": HORSE_AND_ELEPHANT_MODEL_ARTIFACT_TEMPLATE,
         "class_to_idx": HORSE_ELEPHANT_CLASS_TO_IDX,
-        "default_epochs": [0, 1, 2, 4, 6, 8],
+        "default_epochs": [0, 1],
         "train_split": "train",
         "num_classes": 3,
     },
