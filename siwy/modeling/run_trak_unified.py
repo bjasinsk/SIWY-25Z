@@ -1,6 +1,5 @@
 """
 Unified TRAK evaluation script supporting multiple datasets.
-Consolidates run_trak.py, run_trak_bus_truck.py, and run_trak_horse_elephant.py.
 """
 
 from datetime import datetime
