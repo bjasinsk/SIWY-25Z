@@ -167,6 +167,16 @@ def main(
     config = TRAINING_CONFIGS[dataset]
 
     with wandb.init(project=f"{WANDB_PROJECT}", job_type="training") as run:
+        run.config.update(
+            {
+                "model": model,
+                "dataset": dataset,
+                "batch_size": batch_size,
+                "num_classes": num_classes,
+                "split_mode": config["split_mode"],
+            }
+        )
+
         if config["split_mode"] == "separate":
             # Load separate train and val datasets
             train_artifact = run.use_artifact(WANDB_DATASET_PATH(config["train_dataset"]), type="dataset")
