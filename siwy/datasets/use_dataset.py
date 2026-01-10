@@ -3,9 +3,9 @@ import pathlib
 from loguru import logger
 import torch
 import typer
+import wandb
 
 from siwy.config import IS_WINDOWS, PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
-import wandb
 
 app = typer.Typer()
 if IS_WINDOWS:
