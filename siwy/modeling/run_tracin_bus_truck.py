@@ -74,7 +74,7 @@ def main(
     top_k=5,
 ):
     if epochs is None:
-        epochs = [0, 1, 2, 4, 6, 8]
+        epochs = [0, 2]
     model = construct_rn18(num_classes=num_classes, weights=None).to(DEVICE)
     with wandb.init(project="SIWY-25Z", job_type="tracin") as run:
         run.config.update(
