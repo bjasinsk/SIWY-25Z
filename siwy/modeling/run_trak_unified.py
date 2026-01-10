@@ -159,6 +159,8 @@ def main(
         # Ensure consistent transforms
         if hasattr(train_ds, "dataset") and hasattr(train_ds.dataset, "transform"):
             train_ds.dataset.transform = DEFAULT_TRANSFORM
+        elif hasattr(train_ds, "transform"):
+            train_ds.transform = DEFAULT_TRANSFORM
 
         # Create dataloaders
         train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=4)
