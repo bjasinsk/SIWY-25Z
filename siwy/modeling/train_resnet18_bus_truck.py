@@ -16,10 +16,10 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 import typer
+import wandb
 
 from siwy.config import PROCESSED_DATA_DIR, WANDB_DATASET_PATH, WANDB_PROJECT
 from siwy.ModelsFactory import MODELS
-import wandb
 
 if platform.system() == "Windows":
     pathlib.PosixPath = pathlib.WindowsPath

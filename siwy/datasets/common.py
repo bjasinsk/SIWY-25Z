@@ -19,6 +19,10 @@ DATASETS = [
     CatDogConfig.ARTIFACT_NAME,
     "bus-and-truck-difficult-val",
     "bus-and-truck-difficult-train",
+    "horse-and-elephant-easy-val",
+    "horse-and-elephant-easy-train",
+    "horse-and-elephant-difficult-val",
+    "horse-and-elephant-difficult-train",
 ]
 
 DEFAULT_TRANSFORM = transforms.Compose(

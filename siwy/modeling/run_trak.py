@@ -14,6 +14,7 @@ from tqdm import tqdm
 from trak import TRAKer
 from trak.savers import MmapSaver
 import typer
+import wandb
 
 from siwy.common import DEVICE, denormalize
 from siwy.config import FIGURES_DIR, IS_WINDOWS, MODELS_DIR, PROCESSED_DATA_DIR
@@ -21,7 +22,6 @@ from siwy.datasets.CatDogConfig import CAT_AND_DOG_MODEL_ARTIFACT_TEMPLATE, CLAS
 from siwy.datasets.common import DEFAULT_TRANSFORM, load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
 from siwy.ModelsFactory import construct_rn18
-import wandb
 
 
 # Monkeypatch MmapSaver.init_store to fix Windows file locking issue
