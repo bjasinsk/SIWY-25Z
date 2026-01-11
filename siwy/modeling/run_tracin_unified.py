@@ -206,4 +206,15 @@ def main(
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    main(
+        dataset="bus-and-truck-easy-train",
+        ood_dataset="airplanes",
+        batch_size=16,
+        epochs=None,
+        top_k=5,
+        lr=0.001,
+        use_local=False,
+        local_ckpt_path=None,
+    )
+
+    # typer.run(main)
