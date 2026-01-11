@@ -223,4 +223,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main(dataset="bus-and-truck-easy-train", epochs=None, ood_dataset="airplanes", batch_size=32, top_k=5)
+    main(dataset="bus-and-truck-easy-train", epochs=None, ood_dataset="airplanes", batch_size=16, top_k=5)
