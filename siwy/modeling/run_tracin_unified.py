@@ -7,15 +7,14 @@ import pathlib
 from pathlib import Path
 
 from loguru import logger
-import matplotlib.pyplot as plt
 import torch
 from torch.nn import CrossEntropyLoss
 from tracin_pytorch.tracin import vectorized_calculate_tracin_score
 import typer
 import wandb
 
-from siwy.common import DEVICE, denormalize
-from siwy.config import FIGURES_DIR, IS_WINDOWS, MODELS_DIR
+from siwy.common import DEVICE, plot_explainability_results
+from siwy.config import IS_WINDOWS, MODELS_DIR
 from siwy.datasets.common import DEFAULT_TRANSFORM, load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
 from siwy.modeling.common_configs import DATASET_CONFIGS
@@ -26,52 +25,12 @@ if IS_WINDOWS:
     pathlib.PosixPath = pathlib.WindowsPath
 
 
-def plot_tracin_top_contributors(
-    run, train_loader, test_loader, tracin_matrix, test_indices, top_k=5, dataset="dog-and-cat"
-):
-    """Plot top contributing training samples for each test sample."""
-    train_imgs = []
-    for batch in train_loader:
-        ims, _ = batch
-        train_imgs.extend([im for im in ims])
-    test_imgs = []
-    for batch in test_loader:
-        ims, _ = batch
-        test_imgs.extend([im for im in ims])
-
-    summary_table = wandb.Table(columns=["test_id", "train_id", "score"])
-
-    for test_idx in test_indices:
-        scores = tracin_matrix[:, test_idx]
-        top_indices = torch.argsort(scores, descending=True)[:top_k]
-        summary_table.add_data(test_idx, top_indices.cpu().tolist(), scores[top_indices].cpu().tolist())
-
-        logger.info(f"Test idx: {test_idx}, top indices: {top_indices}, scores: {scores[top_indices]}")
-        fig, axs = plt.subplots(1, top_k + 1, figsize=(3 * (top_k + 1), 3))
-        test_img = denormalize(test_imgs[test_idx].cpu()).clamp(0, 1)
-        axs[0].imshow(test_img.permute(1, 2, 0).numpy())
-        axs[0].set_title("Test sample")
-        axs[0].axis("off")
-        for i, idx in enumerate(top_indices):
-            train_img = denormalize(train_imgs[idx].cpu()).clamp(0, 1)
-            axs[i + 1].imshow(train_img.permute(1, 2, 0).numpy())
-            axs[i + 1].set_title(f"Top {i + 1}")
-            axs[i + 1].axis("off")
-        plt.tight_layout()
-        fig_path = FIGURES_DIR / f"tracin_{dataset}_{test_idx}.png"
-        plt.savefig(fig_path)
-        run.log({f"tracin_{dataset}_{test_idx}": wandb.Image(fig)})
-        plt.close(fig)
-
-    run.log({f"tracin_{dataset}_scores": summary_table})
-
-
 def main(
     dataset: str = typer.Option(
         "dog-and-cat", help="Dataset: dog-and-cat | bus-and-truck-easy-train | horse-and-elephant-easy-train"
     ),
     ood_dataset: str = typer.Option("airplanes", help="Out-of-distribution dataset for testing"),
-    batch_size: int = typer.Option(5, help="Batch size for data loading"),
+    batch_size: int = typer.Option(16, help="Batch size for data loading"),
     epochs: list[int] = typer.Option(None, help="Epochs to evaluate (uses dataset defaults if not specified)"),
     top_k: int = typer.Option(5, help="Number of top contributors to visualize"),
     lr: float = typer.Option(0.001, help="Learning rate used during training (for TracIn calculation)"),
@@ -192,29 +151,12 @@ def main(
         logger.info(f"Saved TracIn scores to {matrix_path}")
 
         # --- PLOT RESULTS ---
-        plot_tracin_top_contributors(
-            run,
-            train_loader,
-            test_loader,
-            matrix,
-            test_indices=list(range(top_k)),
-            top_k=top_k,
-            dataset=dataset,
-        )
+        if isinstance(matrix, torch.Tensor):
+            matrix = matrix.detach().cpu().numpy()
+        plot_explainability_results(run, train_ds, test_ds, matrix, logger, "TracIN", top_k, dataset_name=dataset)
 
     logger.success("TracIn finished successfully!")
 
 
 if __name__ == "__main__":
-    main(
-        dataset="bus-and-truck-easy-train",
-        ood_dataset="airplanes",
-        batch_size=16,
-        epochs=None,
-        top_k=5,
-        lr=0.001,
-        use_local=False,
-        local_ckpt_path=None,
-    )
-
-    # typer.run(main)
+    typer.run(main)
