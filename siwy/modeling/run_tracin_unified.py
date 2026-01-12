@@ -30,7 +30,7 @@ def main(
         "dog-and-cat", help="Dataset: dog-and-cat | bus-and-truck-easy-train | horse-and-elephant-easy-train"
     ),
     ood_dataset: str = typer.Option("airplanes", help="Out-of-distribution dataset for testing"),
-    batch_size: int = typer.Option(5, help="Batch size for data loading"),
+    batch_size: int = typer.Option(16, help="Batch size for data loading"),
     epochs: list[int] = typer.Option(None, help="Epochs to evaluate (uses dataset defaults if not specified)"),
     top_k: int = typer.Option(5, help="Number of top contributors to visualize"),
     lr: float = typer.Option(0.001, help="Learning rate used during training (for TracIn calculation)"),
@@ -153,7 +153,7 @@ def main(
         # --- PLOT RESULTS ---
         if isinstance(matrix, torch.Tensor):
             matrix = matrix.detach().cpu().numpy()
-        plot_explainability_results(run, train_ds, test_ds, matrix, logger, 'TracIN', top_k, dataset_name=dataset)
+        plot_explainability_results(run, train_ds, test_ds, matrix, logger, "TracIN", top_k, dataset_name=dataset)
 
     logger.success("TracIn finished successfully!")
 

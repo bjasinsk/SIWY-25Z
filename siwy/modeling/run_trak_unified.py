@@ -5,18 +5,15 @@ Unified TRAK evaluation script supporting multiple datasets.
 from datetime import datetime
 
 from loguru import logger
-from matplotlib import pyplot as plt
 from numpy.lib.format import open_memmap
 import torch
-from torch import Tensor
-from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 from trak import TRAKer
 import typer
 import wandb
 
-from siwy.common import DEVICE, denormalize
-from siwy.config import FIGURES_DIR, MODELS_DIR
+from siwy.common import DEVICE, plot_explainability_results
+from siwy.config import MODELS_DIR
 from siwy.datasets.common import DEFAULT_TRANSFORM, load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
 from siwy.modeling.common_configs import DATASET_CONFIGS
@@ -31,60 +28,6 @@ from siwy.ModelsFactory import construct_rn18
 setup_windows_compatibility()
 
 # app = typer.Typer()
-
-
-def plot_trak(run, ds_train: ImageFolder, ds_val: ImageFolder, scores: Tensor, top_k: int, dataset: str):
-    """
-    Plot TRAK top contributors for each validation image.
-
-    Args:
-        run: wandb run object
-        ds_train: Training dataset
-        ds_val: Validation/test dataset
-        scores: TRAK scores matrix (train_size x val_size)
-        top_k: Number of top contributors to visualize
-        dataset: Dataset name for labeling
-    """
-    summary_table = wandb.Table(columns=["test_id", "train_id", "score"])
-
-    for i in range(len(ds_val)):
-        fig, axs = plt.subplots(ncols=7, figsize=(15, 3))
-        fig.suptitle("Top scoring TRAK images from the train set")
-
-        # Show target image
-        axs[0].imshow(denormalize(ds_val[i][0]).permute(1, 2, 0).clamp(0, 1))
-        axs[0].axis("off")
-        axs[0].set_title("Target image")
-        axs[1].axis("off")
-
-        logger.info(f"val class {ds_val[i][1]}")
-        top_trak_scorers = scores[:, i].argsort()[-top_k:][::-1]
-
-        # Convert to lists for wandb table
-        if isinstance(scores, torch.Tensor):
-            trak_scorers_list = top_trak_scorers.cpu().tolist()
-            scores_list = scores[top_trak_scorers].cpu().tolist()
-        else:
-            # Assuming numpy
-            trak_scorers_list = top_trak_scorers.tolist()
-            scores_list = scores[top_trak_scorers].tolist()
-
-        summary_table.add_data(i, trak_scorers_list, scores_list)
-
-        logger.info(f"Test idx: {i}, top indices: {top_trak_scorers}, scores: {scores[top_trak_scorers]}")
-
-        # Show top contributing training images
-        for ii, train_im_ind in enumerate(top_trak_scorers):
-            logger.info(f"train id ({train_im_ind}): {ds_train[train_im_ind][1]}")
-            axs[ii + 2].imshow(denormalize(ds_train[train_im_ind][0]).permute(1, 2, 0))
-            axs[ii + 2].axis("off")
-
-        logger.info("=" * 40)
-        fig.show()
-        plt.savefig(FIGURES_DIR / f"trak_{dataset}_val_image_{i}.png")
-        run.log({"trak_results": wandb.Image(fig)})
-
-    run.log({f"trak_{dataset}_scores": summary_table})
 
 
 # @app.command()
@@ -217,7 +160,9 @@ def main(
 
         # Plot results
         logger.info("Generating visualizations...")
-        plot_trak(run, train_ds, test_ds, scores, top_k, dataset=dataset)
+        if isinstance(scores, torch.Tensor):
+            scores = scores.detach().cpu().numpy()
+        plot_explainability_results(run, train_ds, test_ds, scores, logger, "TRAK", top_k, dataset_name=dataset)
 
     logger.success("TRAK evaluation finished successfully!")
 
