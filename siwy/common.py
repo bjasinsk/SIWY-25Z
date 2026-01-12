@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 import torch
 import wandb
-import matplotlib.pyplot as plt
 
 from siwy.config import FIGURES_DIR
 
@@ -72,7 +72,7 @@ def plot_multi_method_explainability(
         # 2. Plot Target Image (Spans all rows on the left)
         target_img = denormalize(ds_val[i][0].permute(1, 2, 0)).clamp(0, 1)
         axd["Target"].imshow(target_img)
-        axd["Target"].set_title(f"Target Image", fontsize=16, fontweight="bold")
+        axd["Target"].set_title("Target Image", fontsize=16, fontweight="bold")
         axd["Target"].axis("off")
 
         # 3. Plot Each Method's Row

@@ -3,7 +3,6 @@ from pathlib import Path
 
 from dualxda.explainers import DualDA
 from loguru import logger
-import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import wandb
@@ -23,17 +22,19 @@ LOCAL_CKPT_PATH = PROJ_ROOT / "artifacts" / "cat-dog-2025-12-23-17-17-44-model-0
 
 USE_LOCAL = False
 
+
 class DualDAModelWrapper(nn.Module):
     def __init__(self, original_model):
         super().__init__()
         self.original_model = original_model
-        
+
         self.classifier = original_model.fc
-        
+
         self.features = nn.Sequential(*list(original_model.children())[:-1], nn.Flatten())
 
     def forward(self, x):
         return self.original_model(x)
+
 
 def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_classes=3, lr=0.001, epochs=None, top_k=5):
     if epochs is None:
@@ -93,7 +94,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         if hasattr(train_ds.dataset, "transform"):
             train_ds.dataset.transform = DEFAULT_TRANSFORM
 
-        train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=2)
+        # train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=False, num_workers=2)
         test_loader = torch.utils.data.DataLoader(test_ds, batch_size=1, shuffle=False, num_workers=2)
 
         # --- DUALDA ---
@@ -102,7 +103,7 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         cache_dir = "./content/cache_dir"
         features_dir = "./content/features_dir"
         model_wrapped = DualDAModelWrapper(model)
-        
+
         explainer = DualDA(
             model_wrapped,
             train_ds,
@@ -133,10 +134,9 @@ def main(dataset="dog-and-cat", ood_dataset="airplanes", batch_size=5, num_class
         # --- PLOT RESULTS ---
         if isinstance(result, torch.Tensor):
             result = result.detach().cpu().numpy()
-        plot_explainability_results(run, train_ds, test_ds, result, logger, 'DualDA', top_k)
+        plot_explainability_results(run, train_ds, test_ds, result, logger, "DualDA", top_k)
 
     logger.success("DualDA finished successfully!")
-
 
 
 if __name__ == "__main__":

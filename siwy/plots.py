@@ -1,18 +1,17 @@
 from pathlib import Path
 
 from loguru import logger
+import numpy as np
+import torch
 from tqdm import tqdm
 import typer
 import wandb
-import matplotlib.pyplot as plt
-import numpy as np
-import torch
 
-from siwy.config import FIGURES_DIR, PROCESSED_DATA_DIR, REPORTS_DIR
 from siwy.common import plot_multi_method_explainability
+from siwy.config import FIGURES_DIR, PROCESSED_DATA_DIR, REPORTS_DIR
+from siwy.datasets.CatDogConfig import CLASS_TO_IDX
 from siwy.datasets.common import load_dataset
 from siwy.datasets.wrapper import LabelToIdxWrapper
-from siwy.datasets.CatDogConfig import CLASS_TO_IDX
 
 app = typer.Typer()
 
