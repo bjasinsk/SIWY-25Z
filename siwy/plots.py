@@ -34,16 +34,18 @@ def dualda():
     pass
 
 
-def get_one_method_scores(run, method_name, dataset, artifact_type=None, is_torch=True):
+def get_one_method_scores(run, method_name, dataset, is_torch=True):
     WANDB_PATH = f"jarcin/SIWY-25Z/{method_name}-{dataset}:latest"
     SCORES_DIR = REPORTS_DIR / "scores"
 
-    if artifact_type is None:
-        artifact_type = f"{method_name}-scores"
+    artifact_type = f"{method_name}-scores"
     artifact = run.use_artifact(WANDB_PATH, type=artifact_type)
 
     if is_torch:
-        local_artifact_path = artifact.get_entry(f"{method_name}_score_matrix.pt").download(root=SCORES_DIR)
+        try:
+            local_artifact_path = artifact.get_entry(f"{method_name}_score_matrix.pt").download(root=SCORES_DIR)
+        except KeyError:
+            local_artifact_path = artifact.get_entry(f"{method_name}_score_matrix_{dataset}.pt").download(root=SCORES_DIR)         
         result = torch.load(local_artifact_path).detach().cpu().numpy()
     else:
         local_artifact_path = artifact.get_entry("quickstart.mmap").download(root=SCORES_DIR)
@@ -64,7 +66,7 @@ def plot_all_compare(
     test_ds = LabelToIdxWrapper(base_ds=test_ds, class_to_idx=CLASS_TO_IDX)
 
     with wandb.init(project="SIWY-25Z", job_type="plot") as run:
-        dualda_result = get_one_method_scores(run, "dualda", dataset, artifact_type="dudalda-scores")
+        dualda_result = get_one_method_scores(run, "dualda", dataset)
         trak_result = get_one_method_scores(run, "trak", dataset, is_torch=False)
         tracin_result = get_one_method_scores(run, "tracin", dataset)
 
