@@ -27,10 +27,10 @@ import wandb
 # Apply Windows compatibility fixes
 setup_windows_compatibility()
 
-# app = typer.Typer()
+app = typer.Typer()
 
 
-# @app.command()
+@app.command()
 def main(
     dataset: str = typer.Option(
         "dog-and-cat", help="Dataset: dog-and-cat | bus-and-truck-easy-train | horse-and-elephant-easy-train"
@@ -168,4 +168,4 @@ def main(
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()
