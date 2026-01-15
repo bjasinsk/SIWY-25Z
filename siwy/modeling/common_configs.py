@@ -64,3 +64,15 @@ TRAINING_CONFIGS = {
         "split_mode": "separate",
     },
 }
+
+COMPARISON_RUN_IDS = [
+    "c3bq0fjn",
+    "xx5glyq6",
+    "rd73ztsg",
+    "6qzhybz1",
+    "c4aev4bh",
+    "gz6o042y",
+    "v0g9fp8w",
+    "sstgs63q",
+    "xsq4r4ez",
+]
