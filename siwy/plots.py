@@ -16,24 +16,6 @@ from siwy.datasets.wrapper import LabelToIdxWrapper
 app = typer.Typer()
 
 
-@app.command()
-def trak():
-    # TODO: implement trak - plot_no_train with optional wandb getting/logging
-    pass
-
-
-@app.command()
-def tracin():
-    # TODO: implement tracin - plot_no_train with optional wandb getting/logging
-    pass
-
-
-@app.command()
-def dualda():
-    # TODO: implement dualda functionality
-    pass
-
-
 def get_one_method_scores(run, method_name, dataset, is_torch=True):
     WANDB_PATH = f"jarcin/SIWY-25Z/{method_name}-{dataset}:latest"
     SCORES_DIR = REPORTS_DIR / "scores"
@@ -75,21 +57,6 @@ def plot_all_compare(
             run, train_ds, test_ds, all_scores, method_names=["DualDA", "TRAK", "TracIn"], dataset_name=dataset
         )
 
-
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
-    output_path: Path = FIGURES_DIR / "plot.png",
-    # -----------------------------------------
-):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Generating plot from data...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Plot generation complete.")
-    # -----------------------------------------
 
 
 if __name__ == "__main__":
