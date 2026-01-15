@@ -196,3 +196,5 @@ wandb/
 
 #
 siwy/modeling/TracInPyTorch/*
+models/
+content/
