@@ -16,7 +16,8 @@ Design proposal jest umieszczony w pliku [design_proposal.md](./docs/design_prop
 
 - [Commercial Aircraft](https://www.kaggle.com/api/v1/datasets/download/nelyg8002000/commercial-aircraft-dataset)
 - [Dog and Cat](https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset)
-- Bus and Truck Images Dataset (to be uploaded to kaggle) # TODO: provide link
+- [Bus and Truck](https://drive.google.com/file/d/1B01c3KJZMHJQZ-QkysonH-DUIdMS5niZ/view?usp=drive_link)
+- [Elepanht and Horse]( https://drive.google.com/file/d/1eh1soLM9TroU5gx4KPEeNQ9CZMn3ihVV/view?usp=drive_link)
 
 ## Setup
 
