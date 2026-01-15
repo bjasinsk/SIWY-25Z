@@ -10,7 +10,6 @@ import torch
 from tqdm import tqdm
 from trak import TRAKer
 import typer
-import wandb
 
 from siwy.common import DEVICE, plot_explainability_results
 from siwy.config import MODELS_DIR
@@ -23,6 +22,7 @@ from siwy.modeling.modeling_utils import (
     setup_windows_compatibility,
 )
 from siwy.ModelsFactory import construct_rn18
+import wandb
 
 # Apply Windows compatibility fixes
 setup_windows_compatibility()
@@ -168,4 +168,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main(dataset="bus-and-truck-easy-train", epochs=None, ood_dataset="airplanes", batch_size=16, top_k=5)
+    typer.run(main)
